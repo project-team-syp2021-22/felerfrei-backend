@@ -12,6 +12,7 @@ public class OrderContent {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name="order_product_id")
     private Integer id;
 
     private Integer amount;

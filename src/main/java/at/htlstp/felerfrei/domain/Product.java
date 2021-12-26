@@ -21,7 +21,7 @@ public class Product {
     @Column(name = "description", length = 1024)
     private String description;
 
-    @Column(name = "published")
+    @Column(name = "ispublished")
     private Boolean published;
 
     @Column(name = "price")

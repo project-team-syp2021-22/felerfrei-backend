@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "\"Order\"")
+@Table(name = "\"order\"")
 @Getter
 public class Order {
     @Id
@@ -20,7 +20,7 @@ public class Order {
     @Column(name = "orderdate", nullable = false)
     private LocalDate orderdate;
 
-    @Column(name = "ordered", nullable = false)
+    @Column(name = "isordered", nullable = false)
     private Boolean ordered = false;
 
     @Column(name = "order_address", length = 1024)
