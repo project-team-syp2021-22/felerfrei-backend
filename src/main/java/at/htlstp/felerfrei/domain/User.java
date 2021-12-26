@@ -20,7 +20,7 @@ public class User {
     @Column(name = "lastname", nullable = false, length = 128)
     private String lastname;
 
-    @Column(name = "email", nullable = false, length = 248)
+    @Column(name = "email", nullable = false, length = 248, unique = true)
     private String email;
 
     @Column(name = "password", length = 2048)
