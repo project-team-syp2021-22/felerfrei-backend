@@ -1,6 +1,7 @@
 package at.htlstp.felerfrei.domain.order;
 
 import at.htlstp.felerfrei.domain.Product;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 import javax.persistence.*;
@@ -24,6 +25,7 @@ public class OrderContent {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonIgnore
     private Order order;
 
     @ManyToOne
