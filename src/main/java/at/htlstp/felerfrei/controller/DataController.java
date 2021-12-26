@@ -1,7 +1,8 @@
-package at.htlstp.felerfrei;
+package at.htlstp.felerfrei.controller;
 
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class Controller {
+public class DataController {
+    
 }
