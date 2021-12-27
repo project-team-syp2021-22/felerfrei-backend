@@ -14,7 +14,7 @@ create table Project
     id          serial primary key,
     description varchar(1024),
     title       varchar(256),
-    isPublished   bit,
+    isPublished   bool,
     date date
 );
 create table Role
@@ -29,7 +29,7 @@ create table "user"
     lastname  varchar(128) not null,
     email     varchar(248) not null,
     password  varchar(2048), --hoffentlich verhasht oder so
-    enabled   bit not null,
+    enabled   bool not null,
     telephonenumber varchar(30),
     role_id   int not null,
     UNIQUE(email),
@@ -47,14 +47,14 @@ create table Product
     id          serial primary key,
     name        varchar(254) not null,
     description varchar(1024),
-    isPublished   bit,
+    isPublished   bool,
     price       float
 );
 create table "order"
 (
     id        serial primary key,
     orderdate date not null,
-    isOrdered   bit not null,
+    isOrdered   bool not null,
     order_address varchar(1024),
     user_id   int,
     constraint FK_Order_User foreign key (user_id) references "user" (id)
