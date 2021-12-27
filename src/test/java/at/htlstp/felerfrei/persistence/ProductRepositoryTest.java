@@ -11,10 +11,10 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
-
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
@@ -40,7 +40,9 @@ class ProductRepositoryTest {
         );
 
         var product = new Product(null, "name", "description", true, 23D, images);
-        productRepository.save(product);
+        var saved = productRepository.save(product);
+
+        assertThat(saved.getImages()).hasSize(3);
     }
 
     @Test
@@ -54,6 +56,8 @@ class ProductRepositoryTest {
         var product = new Product(null, "name", "description", true, 23D, null);
         product.addAllImages(images);
 
-        productRepository.save(product);
+        var saved = productRepository.save(product);
+
+        assertThat(saved.getImages()).hasSize(3);
     }
 }
