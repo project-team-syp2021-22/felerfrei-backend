@@ -3,8 +3,10 @@ package at.htlstp.felerfrei.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +15,7 @@ import java.util.Objects;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Product {
+public class Product implements Showable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
@@ -31,7 +33,7 @@ public class Product {
     @Column(name = "price")
     private Double price;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name="product_image",
             joinColumns=@JoinColumn(name="product_id"),
@@ -50,5 +52,19 @@ public class Product {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public void addAllImages(@NonNull List<Image> images) {
+        for(var i : images)
+            addImage(i);
+    }
+
+    @Override
+    public void addImage(@NonNull Image image) {
+        if(this.images == null) {
+            this.images = new ArrayList<>();
+        }
+        this.images.add(image);
     }
 }
