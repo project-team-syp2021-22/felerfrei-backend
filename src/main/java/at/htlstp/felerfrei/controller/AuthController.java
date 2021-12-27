@@ -1,6 +1,5 @@
 package at.htlstp.felerfrei.controller;
 
-import at.htlstp.felerfrei.domain.Role;
 import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.User;
 import at.htlstp.felerfrei.payload.request.SignupRequest;
@@ -54,7 +53,8 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtils.generateToken(authentication);
         var userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername()));
+        var user = userRepository.findById(userDetails.getId()).orElseThrow();
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname()));
     }
 
     @PostMapping("/signup")
