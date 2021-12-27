@@ -1,6 +1,8 @@
 package at.htlstp.felerfrei.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Objects;
@@ -8,9 +10,11 @@ import java.util.Objects;
 @Entity
 @Table(name = "role")
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Role {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
 

@@ -1,16 +1,21 @@
 package at.htlstp.felerfrei.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import java.util.Objects;
 
 @Entity
 @Table(name = "\"user\"")
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -21,6 +26,7 @@ public class User {
     private String lastname;
 
     @Column(name = "email", nullable = false, length = 248, unique = true)
+    @Email
     private String email;
 
     @Column(name = "password", length = 2048)

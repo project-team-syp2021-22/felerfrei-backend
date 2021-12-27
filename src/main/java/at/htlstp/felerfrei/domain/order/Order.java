@@ -1,19 +1,22 @@
 package at.htlstp.felerfrei.domain.order;
 
 import at.htlstp.felerfrei.domain.User;
-import lombok.Getter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 @Entity
 @Table(name = "\"order\"")
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", nullable = false)
     private Integer id;
 
@@ -30,7 +33,7 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy="order")
+    @OneToMany(mappedBy="order", fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     private List<OrderContent> orderContents;
 
     @Override
@@ -44,5 +47,32 @@ public class Order {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    public void addOrderContent(@NonNull OrderContent content) {
+        if(this.orderContents== null) {
+            this.orderContents = new ArrayList<>();
+        }
+
+        this.orderContents.add(content);
+        content.setOrder(this);
+    }
+
+    public void setOrderContent(List<OrderContent> orderContents) {
+        for(var c : orderContents) {
+            addOrderContent(c);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", orderdate=" + orderdate +
+                ", ordered=" + ordered +
+                ", orderAddress='" + orderAddress + '\'' +
+                ", user=" + user +
+                ", orderContents=" + orderContents +
+                '}';
     }
 }

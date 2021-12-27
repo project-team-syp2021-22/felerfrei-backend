@@ -2,13 +2,18 @@ package at.htlstp.felerfrei.domain.order;
 
 import at.htlstp.felerfrei.domain.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity(name = "order_product")
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderContent {
 
     @Id
@@ -23,9 +28,10 @@ public class OrderContent {
     @Column(name = "retail_price")
     private Double retailPrice;
 
-    @ManyToOne
+    @ManyToOne(targetEntity = Order.class)
     @JoinColumn(name = "order_id")
     @JsonIgnore
+    @Setter
     private Order order;
 
     @ManyToOne
@@ -43,5 +49,16 @@ public class OrderContent {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "OrderContent{" +
+                "id=" + id +
+                ", amount=" + amount +
+                ", extrawurscht='" + extrawurscht + '\'' +
+                ", retailPrice=" + retailPrice +
+                ", product=" + product +
+                '}';
     }
 }
