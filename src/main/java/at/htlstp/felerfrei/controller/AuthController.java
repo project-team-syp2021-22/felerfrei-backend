@@ -62,16 +62,10 @@ public class AuthController {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
-        }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        var user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
+        var user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()), signUpRequest.getTelephone());
         var role = roleRepository.findByName(RoleAuthority.ROLE_USER);
         try {
             user.setRole(role.orElseThrow(() -> new NoSuchElementException("Role not found")));
