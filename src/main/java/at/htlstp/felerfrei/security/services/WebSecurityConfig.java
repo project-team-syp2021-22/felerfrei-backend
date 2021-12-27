@@ -22,12 +22,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 )
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
-    private final UserDetailsServiceImpl userDetailsServiceImpl;
+    private final UserDetailsServiceImpl userService;
 
     private final AuthEntryPointJwt authenticationEntryPointImpl;
 
-    public WebSecurityConfig(UserDetailsServiceImpl userDetailsServiceImpl, AuthEntryPointJwt authenticationEntryPointImpl) {
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
+    public WebSecurityConfig(UserDetailsServiceImpl userService, AuthEntryPointJwt authenticationEntryPointImpl) {
+        this.userService = userService;
         this.authenticationEntryPointImpl = authenticationEntryPointImpl;
     }
 
@@ -38,7 +38,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsServiceImpl)
+        auth.userDetailsService(userService)
                 .passwordEncoder(passwordEncoder());
     }
 

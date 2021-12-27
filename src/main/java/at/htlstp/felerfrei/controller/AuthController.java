@@ -21,9 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashSet;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -73,9 +71,8 @@ public class AuthController {
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        // Create new user's account
         var user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
-        var role = roleRepository.findByName(RoleAuthority.ROLE_USER.name());
+        var role = roleRepository.findByName(RoleAuthority.ROLE_USER);
         try {
             user.setRole(role.orElseThrow(() -> new NoSuchElementException("Role not found")));
         } catch (NoSuchElementException e) {
