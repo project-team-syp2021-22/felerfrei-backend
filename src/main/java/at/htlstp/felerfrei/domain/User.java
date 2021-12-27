@@ -3,6 +3,7 @@ package at.htlstp.felerfrei.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
@@ -40,7 +41,15 @@ public class User {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "role_id", nullable = false)
+    @Setter
     private Role role;
+
+    public User(String firstname, String lastname, String email, String password) {
+        this.firstname = firstname;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+    }
 
     @Override
     public boolean equals(Object o) {
