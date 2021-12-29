@@ -3,6 +3,10 @@ insert into role (id, name) values (2, 'ROLE_ADMIN');
 
 
 -- test data for users is not possible, please add it manually using the authexample ui
+insert into "user" (id, firstname, lastname, email, password, enabled, telephonenumber, role_id)
+values (1, 'John', 'Doe', 'john@doe.com', 'not possible via sql', true, '+49123456789', 1);
+insert into "user" (id, firstname, lastname, email, password, enabled, telephonenumber, role_id)
+values (2, 'Joe', 'Mama', 'joe@mama.com', 'not possible',true, '+49123456789', 2);
 
 insert into product (id, name, description, ispublished, price)
 values (1, 'Sessel', 'Holzsessel aus Holz', true, 10.00);
