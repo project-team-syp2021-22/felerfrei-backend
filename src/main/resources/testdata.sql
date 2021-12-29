@@ -1,11 +1,8 @@
 insert into role (id, name) values (1, 'ROLE_USER');
 insert into role (id, name) values (2, 'ROLE_ADMIN');
 
--- password: password
-insert into "user" (firstname, lastname, email, password, enabled, telephonenumber, role_id)
-values ('Test', 'User', 'user@test.com', '$2a$10$DehSr/P.ahoGRuGfOfnFJulJ59b9jRyZiiICsB86uvdNO3VEFjgp.', true, '+123456789', 1);
-insert into "user" (firstname, lastname, email, password, enabled, telephonenumber, role_id)
-values ('Admin', 'User', 'admin@test.com', '$2a$10$DehSr/P.ahoGRuGfOfnFJulJ59b9jRyZiiICsB86uvdNO3VEFjgp.', true, '+123456789', 2);
+
+-- test data for users is not possible, please add it manually using the authexample ui
 
 insert into product (id, name, description, ispublished, price)
 values (1, 'Sessel', 'Holzsessel aus Holz', true, 10.00);
