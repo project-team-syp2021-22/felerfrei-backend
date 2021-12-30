@@ -45,6 +45,17 @@ public class AuthController {
         this.jwtUtils = jwtUtils;
     }
 
+    @PostMapping("/check")
+    public ResponseEntity<MessageResponse> checkUser(@RequestBody String token) {
+        try {
+            jwtUtils.getEmailFromToken(token);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse("Invalid token"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(new MessageResponse("Valid token"), HttpStatus.OK);
+    }
+
+
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -54,7 +65,7 @@ public class AuthController {
         String jwt = jwtUtils.generateToken(authentication);
         var userDetails = (UserDetailsImpl) authentication.getPrincipal();
         var user = userRepository.findById(userDetails.getId()).orElseThrow();
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname()));
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
     }
 
     @PostMapping("/signup")
@@ -62,16 +73,10 @@ public class AuthController {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
-        }
-
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity
-                    .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
 
-        var user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()));
+        var user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()), signUpRequest.getTelephone());
         var role = roleRepository.findByName(RoleAuthority.ROLE_USER);
         try {
             user.setRole(role.orElseThrow(() -> new NoSuchElementException("Role not found")));

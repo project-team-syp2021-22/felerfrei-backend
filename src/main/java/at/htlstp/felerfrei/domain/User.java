@@ -44,11 +44,12 @@ public class User {
     @Setter
     private Role role;
 
-    public User(String firstname, String lastname, String email, String password) {
+    public User(String firstname, String lastname, String email, String password, String telephonenumber) {
         this.firstname = firstname;
         this.lastname = lastname;
         this.email = email;
         this.password = password;
+        this.telephonenumber = telephonenumber;
     }
 
     @Override
