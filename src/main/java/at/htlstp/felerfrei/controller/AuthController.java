@@ -1,13 +1,15 @@
 package at.htlstp.felerfrei.controller;
 
 import at.htlstp.felerfrei.domain.RoleAuthority;
-import at.htlstp.felerfrei.domain.User;
+import at.htlstp.felerfrei.domain.user.User;
+import at.htlstp.felerfrei.domain.user.VerificationToken;
 import at.htlstp.felerfrei.payload.request.SignupRequest;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
 import at.htlstp.felerfrei.payload.request.LoginRequest;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.RoleRepository;
 import at.htlstp.felerfrei.persistence.UserRepository;
+import at.htlstp.felerfrei.persistence.VerificationTokenRepository;
 import at.htlstp.felerfrei.security.jwt.JwtUtils;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
@@ -17,10 +19,13 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -31,18 +36,24 @@ public class AuthController {
 
     private final UserRepository userRepository;
 
+    private final VerificationTokenRepository verificationTokenRepository;
+
     private final RoleRepository roleRepository;
 
     private final PasswordEncoder encoder;
 
     private final JwtUtils jwtUtils;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils) {
+    private final MailSender mailSender;
+
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, VerificationTokenRepository verificationTokenRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, MailSender mailSender) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
+        this.verificationTokenRepository = verificationTokenRepository;
         this.roleRepository = roleRepository;
         this.encoder = encoder;
         this.jwtUtils = jwtUtils;
+        this.mailSender = mailSender;
     }
 
     @PostMapping("/check")
@@ -69,7 +80,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest, HttpServletRequest request, Errors errors) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
@@ -83,8 +94,27 @@ public class AuthController {
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Could not register User!"));
         }
-        userRepository.save(user);
+        var saved = userRepository.save(user);
+        var token = UUID.randomUUID().toString();
+        verificationTokenRepository.save(new VerificationToken(token, saved));
+
+        mailSender.sendVerificationEmail(saved, "http://localhost:3000/verify/");
+
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
+    @PostMapping("/verify")
+    public String verifyAccount(@RequestBody String token) {
+        var found = verificationTokenRepository.findByToken(token);
+        if (found.isPresent()) {
+            var verificationToken = found.get();
+            var user = verificationToken.getUser();
+            user.setEnabled(true);
+            userRepository.save(user);
+            verificationTokenRepository.delete(verificationToken);
+            return "Account verified!";
+        } else {
+            return "Invalid token";
+        }
+    }
 }

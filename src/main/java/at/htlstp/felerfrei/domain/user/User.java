@@ -1,5 +1,6 @@
-package at.htlstp.felerfrei.domain;
+package at.htlstp.felerfrei.domain.user;
 
+import at.htlstp.felerfrei.domain.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,6 +35,7 @@ public class User {
     private String password;
 
     @Column(name = "enabled", nullable = false)
+    @Setter
     private Boolean enabled = false;
 
     @Column(name = "telephonenumber", length = 30)

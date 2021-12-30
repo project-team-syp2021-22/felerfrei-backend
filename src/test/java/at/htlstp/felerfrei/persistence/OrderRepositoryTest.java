@@ -4,7 +4,7 @@ import at.htlstp.felerfrei.FelerfreibackendApplication;
 import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.domain.Role;
 import at.htlstp.felerfrei.domain.RoleAuthority;
-import at.htlstp.felerfrei.domain.User;
+import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import org.junit.jupiter.api.BeforeEach;

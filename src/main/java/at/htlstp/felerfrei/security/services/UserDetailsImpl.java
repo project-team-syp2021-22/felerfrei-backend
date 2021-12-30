@@ -1,6 +1,6 @@
 package at.htlstp.felerfrei.security.services;
 
-import at.htlstp.felerfrei.domain.User;
+import at.htlstp.felerfrei.domain.user.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

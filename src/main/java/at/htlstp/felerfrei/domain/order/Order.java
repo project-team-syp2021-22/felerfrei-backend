@@ -1,6 +1,6 @@
 package at.htlstp.felerfrei.domain.order;
 
-import at.htlstp.felerfrei.domain.User;
+import at.htlstp.felerfrei.domain.user.User;
 import lombok.*;
 
 import javax.persistence.*;

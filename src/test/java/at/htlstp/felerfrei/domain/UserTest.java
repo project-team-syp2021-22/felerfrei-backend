@@ -1,5 +1,6 @@
 package at.htlstp.felerfrei.domain;
 
+import at.htlstp.felerfrei.domain.user.User;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
