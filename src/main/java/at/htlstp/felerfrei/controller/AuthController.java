@@ -45,6 +45,17 @@ public class AuthController {
         this.jwtUtils = jwtUtils;
     }
 
+    @PostMapping("/check")
+    public ResponseEntity<MessageResponse> checkUser(@RequestBody String token) {
+        try {
+            jwtUtils.getEmailFromToken(token);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(new MessageResponse("Invalid token"), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(new MessageResponse("Valid token"), HttpStatus.OK);
+    }
+
+
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
@@ -54,7 +65,7 @@ public class AuthController {
         String jwt = jwtUtils.generateToken(authentication);
         var userDetails = (UserDetailsImpl) authentication.getPrincipal();
         var user = userRepository.findById(userDetails.getId()).orElseThrow();
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname()));
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
     }
 
     @PostMapping("/signup")
