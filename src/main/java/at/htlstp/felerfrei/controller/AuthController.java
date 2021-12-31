@@ -4,6 +4,7 @@ import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.user.VerificationToken;
 import at.htlstp.felerfrei.payload.request.SignupRequest;
+import at.htlstp.felerfrei.payload.request.TokenRequest;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
 import at.htlstp.felerfrei.payload.request.LoginRequest;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
@@ -57,9 +58,9 @@ public class AuthController {
     }
 
     @PostMapping("/check")
-    public ResponseEntity<MessageResponse> checkUser(@RequestBody String token) {
+    public ResponseEntity<MessageResponse> checkUser(@RequestBody TokenRequest token) {
         try {
-            jwtUtils.getEmailFromToken(token);
+            jwtUtils.getEmailFromToken(token.getToken());
         } catch (RuntimeException e) {
             return new ResponseEntity<>(new MessageResponse("Invalid token"), HttpStatus.BAD_REQUEST);
         }
@@ -104,17 +105,17 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public String verifyAccount(@RequestBody String token) {
-        var found = verificationTokenRepository.findByToken(token);
+    public ResponseEntity<String> verifyAccount(@RequestBody TokenRequest token) {
+        var found = verificationTokenRepository.findByToken(token.getToken());
         if (found.isPresent()) {
             var verificationToken = found.get();
             var user = verificationToken.getUser();
             user.setEnabled(true);
             userRepository.save(user);
             verificationTokenRepository.delete(verificationToken);
-            return "Account verified!";
+            return ResponseEntity.ok("Account verified!");
         } else {
-            return "Invalid token";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid token");
         }
     }
 }
