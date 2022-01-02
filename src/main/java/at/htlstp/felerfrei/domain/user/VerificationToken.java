@@ -4,9 +4,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity(name = "verification_token")
 @Getter
@@ -24,7 +22,7 @@ public class VerificationToken {
     @JoinColumn(nullable = false, name = "user_id")
     private User user;
 
-    private Date expiryDate;
+    private LocalDateTime expiryDate;
 
     public VerificationToken(String token, User user) {
         this.token = token;
@@ -32,11 +30,9 @@ public class VerificationToken {
         this.expiryDate = calculateExpiryDate(EXPIRATION_TIME);
     }
 
-    private Date calculateExpiryDate(int expiryTimeInMinutes) {
-        var calendar = Calendar.getInstance();
-        calendar.setTime(new Timestamp(calendar.getTime().getTime()));
-        calendar.add(Calendar.MINUTE, expiryTimeInMinutes);
-        return new Date(calendar.getTime().getTime());
+    private LocalDateTime calculateExpiryDate(int expiryTimeInMinutes) {
+        var date = LocalDateTime.now();
+        return date.plusMinutes(expiryTimeInMinutes);
     }
 
 }

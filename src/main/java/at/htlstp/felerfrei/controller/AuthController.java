@@ -20,11 +20,10 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -81,7 +80,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest, HttpServletRequest request, Errors errors) {
+    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
@@ -109,6 +108,9 @@ public class AuthController {
         var found = verificationTokenRepository.findByToken(token.getToken());
         if (found.isPresent()) {
             var verificationToken = found.get();
+            if(LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
+                return ResponseEntity.badRequest().body("Verification token expired!");
+            }
             var user = verificationToken.getUser();
             user.setEnabled(true);
             userRepository.save(user);
