@@ -22,11 +22,11 @@ public class JavaMailProvider {
         var port = Integer.parseInt(String.valueOf(properties.get("port")));
         mailSender.setPort(port);
         mailSender.setUsername(properties.get("username").toString());
-        mailSender.setPassword(properties.get("password").toString());
+//        mailSender.setPassword(properties.get("password").toString());
         var javaMailProperties = mailSender.getJavaMailProperties();
-        javaMailProperties.setProperty("mail.transport.protocol", "smtp");
-        javaMailProperties.setProperty("mail.smtp.auth", "true");
-        javaMailProperties.setProperty("mail.smtp.starttls.enable", "true");
+//        javaMailProperties.setProperty("mail.transport.protocol", "smtp");
+//        javaMailProperties.setProperty("mail.smtp.auth", "true");
+//        javaMailProperties.setProperty("mail.smtp.starttls.enable", "true");
 
         return mailSender;
     }

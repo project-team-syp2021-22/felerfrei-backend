@@ -1,7 +1,6 @@
 package at.htlstp.felerfrei.controller;
 
-import at.htlstp.felerfrei.domain.user.User;
-import at.htlstp.felerfrei.persistence.VerificationTokenRepository;
+import at.htlstp.felerfrei.domain.user.VerificationToken;
 import lombok.SneakyThrows;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -13,21 +12,20 @@ import javax.mail.internet.MimeMessage;
 public class MailSender {
 
     private final JavaMailSender mailSender;
-    private final VerificationTokenRepository tokenRepository;
 
-    public MailSender(JavaMailSender sender, VerificationTokenRepository tokenRepository) {
+    public MailSender(JavaMailSender sender) {
         this.mailSender = sender;
-        this.tokenRepository = tokenRepository;
     }
 
 
     @SneakyThrows
-    public void sendVerificationEmail(User user, String siteURL) {
+    public void sendVerificationEmail(VerificationToken token, String siteURL) {
+        var user = token.getUser();
 
         // read text from file and replace placeholders
         var text = new String(this.getClass().getResourceAsStream("/email/verification.html").readAllBytes());
         text = text.replace("{name}", user.getFirstname() + " " + user.getLastname());
-        text = text.replace("{link}", siteURL + tokenRepository.findByUser(user).getToken());
+        text = text.replace("{link}", siteURL + token);
 
         MimeMessage mailMessage = mailSender.createMimeMessage();
         mailMessage.setSubject("Verification", "UTF-8");

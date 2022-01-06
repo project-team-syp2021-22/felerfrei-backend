@@ -35,4 +35,8 @@ public class VerificationToken {
         return date.plusMinutes(expiryTimeInMinutes);
     }
 
+    @Override
+    public String toString() {
+        return token;
+    }
 }

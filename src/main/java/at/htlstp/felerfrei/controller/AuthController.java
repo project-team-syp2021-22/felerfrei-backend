@@ -96,9 +96,9 @@ public class AuthController {
         }
         var saved = userRepository.save(user);
         var token = UUID.randomUUID().toString();
-        verificationTokenRepository.save(new VerificationToken(token, saved));
+        var savedToken = verificationTokenRepository.save(new VerificationToken(token, saved));
 
-        mailSender.sendVerificationEmail(saved, "http://localhost:3000/verify/");
+        mailSender.sendVerificationEmail(savedToken, "http://localhost:3000/verify/");
 
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
