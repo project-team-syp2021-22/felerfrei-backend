@@ -6,6 +6,7 @@ drop table if exists Project;
 drop table if exists image;
 drop table if exists Product;
 drop table if exists "order";
+drop table if exists verification_token;
 drop table if exists "user";
 drop table if exists Role;
 
@@ -14,8 +15,8 @@ create table Project
     id          serial primary key,
     description varchar(1024),
     title       varchar(256),
-    isPublished   bool,
-    date date
+    isPublished bool,
+    date        date
 );
 create table Role
 (
@@ -24,15 +25,15 @@ create table Role
 );
 create table "user"
 (
-    id        serial primary key,
-    firstname varchar(128) not null,
-    lastname  varchar(128) not null,
-    email     varchar(248) not null,
-    password  varchar(2048), --hoffentlich verhasht oder so
-    enabled   bool not null,
+    id              serial primary key,
+    firstname       varchar(128) not null,
+    lastname        varchar(128) not null,
+    email           varchar(248) not null,
+    password        varchar(2048), --hoffentlich verhasht oder so
+    enabled         bool         not null,
     telephonenumber varchar(30),
-    role_id   int not null,
-    UNIQUE(email),
+    role_id         int          not null,
+    UNIQUE (email),
     constraint FK_Role_id foreign key (Role_id) references Role (id)
 );
 
@@ -47,16 +48,16 @@ create table Product
     id          serial primary key,
     name        varchar(254) not null,
     description varchar(1024),
-    isPublished   bool,
+    isPublished bool,
     price       float
 );
 create table "order"
 (
-    id        serial primary key,
-    orderdate date not null,
-    isOrdered   bool not null,
+    id            serial primary key,
+    orderdate     date not null,
+    isOrdered     bool not null,
     order_address varchar(1024),
-    user_id   int,
+    user_id       int,
     constraint FK_Order_User foreign key (user_id) references "user" (id)
 );
 
@@ -81,11 +82,11 @@ create table Product_Image
 create table Order_Product
 (
     Order_Product_id serial primary key,
-    Order_id     int,
-    Product_id   int,
-    amount       int,
-    retail_price float,
-    Extrawurscht varchar(1024),
+    Order_id         int,
+    Product_id       int,
+    amount           int,
+    retail_price     float,
+    Extrawurscht     varchar(1024),
     constraint FK_Order_Product_Product_id foreign key (Product_id) references Product (id),
     constraint FK_Order_Product_Order_id foreign key (Order_id) references "order" (id)
 );
