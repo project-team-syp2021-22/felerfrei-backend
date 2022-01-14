@@ -15,6 +15,7 @@ import java.util.Objects;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -43,7 +44,6 @@ public class User {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "role_id", nullable = false)
-    @Setter
     private Role role;
 
     public User(String firstname, String lastname, String email, String password, String telephonenumber) {
@@ -65,5 +65,19 @@ public class User {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstname='" + firstname + '\'' +
+                ", lastname='" + lastname + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", telephonenumber='" + telephonenumber + '\'' +
+                ", role=" + role +
+                '}';
     }
 }

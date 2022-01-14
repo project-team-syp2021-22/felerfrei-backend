@@ -3,6 +3,7 @@ package at.htlstp.felerfrei.controller;
 import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.user.VerificationToken;
+import at.htlstp.felerfrei.payload.request.ChangeCredentialsRequest;
 import at.htlstp.felerfrei.payload.request.SignupRequest;
 import at.htlstp.felerfrei.payload.request.TokenRequest;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
@@ -16,9 +17,11 @@ import at.htlstp.felerfrei.security.services.UserDetailsImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -108,7 +111,7 @@ public class AuthController {
         var found = verificationTokenRepository.findByToken(token.getToken());
         if (found.isPresent()) {
             var verificationToken = found.get();
-            if(LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
+            if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
                 return ResponseEntity.badRequest().body("Verification token expired!");
             }
             var user = verificationToken.getUser();
@@ -119,5 +122,31 @@ public class AuthController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid token");
         }
+    }
+
+    @PostMapping("/changeCredentials")
+    public ResponseEntity<JwtResponse> changeCredential(@Valid @RequestBody ChangeCredentialsRequest request) {
+        var email = jwtUtils.getEmailFromToken(request.getToken());
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if(request.getPassword() == null)
+            throw new BadCredentialsException("Password cannot be null");
+        if(!encoder.matches(request.getPassword(), user.getPassword()))
+            throw new BadCredentialsException("Wrong password");
+
+        user.setEmail(request.getEmail());
+        user.setFirstname(request.getFirstname());
+        user.setLastname(request.getLastname());
+        user.setTelephonenumber(request.getTelephone());
+        user.setPassword(encoder.encode(request.getPassword())); // muss man machen weil salt anders ist
+
+        userRepository.save(user);
+
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateToken(authentication);
+        var userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
     }
 }
