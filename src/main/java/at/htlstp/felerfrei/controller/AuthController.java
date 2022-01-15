@@ -3,6 +3,7 @@ package at.htlstp.felerfrei.controller;
 import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.user.VerificationToken;
+import at.htlstp.felerfrei.payload.request.ChangeCredentialsRequest;
 import at.htlstp.felerfrei.payload.request.SignupRequest;
 import at.htlstp.felerfrei.payload.request.TokenRequest;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
@@ -13,12 +14,15 @@ import at.htlstp.felerfrei.persistence.UserRepository;
 import at.htlstp.felerfrei.persistence.VerificationTokenRepository;
 import at.htlstp.felerfrei.security.jwt.JwtUtils;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
+import lombok.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -69,6 +73,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
+        System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
@@ -80,20 +85,23 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<MessageResponse> registerUser(@Valid @NonNull @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
-
-        var user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(), encoder.encode(signUpRequest.getPassword()), signUpRequest.getTelephone());
-        var role = roleRepository.findByName(RoleAuthority.ROLE_USER);
+        User user;
         try {
-            user.setRole(role.orElseThrow(() -> new NoSuchElementException("Role not found")));
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new MessageResponse("Could not register User!"));
+            user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(),
+                    encoder.encode(signUpRequest.getPassword()), signUpRequest.getTelephone());
+        } catch(IllegalArgumentException e) {
+            throw new IllegalArgumentException("Password must be at least 8 characters long");
         }
+
+        var role = roleRepository.findByName(RoleAuthority.ROLE_USER);
+        user.setRole(role.orElseThrow(() -> new NoSuchElementException("Role not found")));
+
         var saved = userRepository.save(user);
         var token = UUID.randomUUID().toString();
         var savedToken = verificationTokenRepository.save(new VerificationToken(token, saved));
@@ -108,7 +116,7 @@ public class AuthController {
         var found = verificationTokenRepository.findByToken(token.getToken());
         if (found.isPresent()) {
             var verificationToken = found.get();
-            if(LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
+            if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
                 return ResponseEntity.badRequest().body("Verification token expired!");
             }
             var user = verificationToken.getUser();
@@ -119,5 +127,31 @@ public class AuthController {
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid token");
         }
+    }
+
+    @PostMapping("/changeCredentials")
+    public ResponseEntity<JwtResponse> changeCredential(@Valid @RequestBody ChangeCredentialsRequest request) {
+        var email = jwtUtils.getEmailFromToken(request.getToken());
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        if (request.getPassword() == null)
+            throw new BadCredentialsException("Password cannot be null");
+        if (!encoder.matches(request.getPassword(), user.getPassword()))
+            throw new BadCredentialsException("Wrong password");
+
+        user.setEmail(request.getEmail());
+        user.setFirstname(request.getFirstname());
+        user.setLastname(request.getLastname());
+        user.setTelephonenumber(request.getTelephone());
+        user.setPassword(encoder.encode(request.getPassword())); // muss man machen weil salt anders ist
+
+        userRepository.save(user);
+
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        String jwt = jwtUtils.generateToken(authentication);
+        var userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
     }
 }
