@@ -3,11 +3,8 @@ package at.htlstp.felerfrei.controller;
 import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.user.VerificationToken;
-import at.htlstp.felerfrei.payload.request.ChangeCredentialsRequest;
-import at.htlstp.felerfrei.payload.request.SignupRequest;
-import at.htlstp.felerfrei.payload.request.TokenRequest;
+import at.htlstp.felerfrei.payload.request.*;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
-import at.htlstp.felerfrei.payload.request.LoginRequest;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.RoleRepository;
 import at.htlstp.felerfrei.persistence.UserRepository;
@@ -50,7 +47,9 @@ public class AuthController {
 
     private final MailSender mailSender;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, VerificationTokenRepository verificationTokenRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, MailSender mailSender) {
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
+                          VerificationTokenRepository verificationTokenRepository, RoleRepository roleRepository,
+                          PasswordEncoder encoder, JwtUtils jwtUtils, MailSender mailSender) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.verificationTokenRepository = verificationTokenRepository;
@@ -73,7 +72,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
-        System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
@@ -153,5 +151,33 @@ public class AuthController {
         String jwt = jwtUtils.generateToken(authentication);
         var userDetails = (UserDetailsImpl) authentication.getPrincipal();
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
+    }
+
+    @PostMapping("/requestResetPassword")
+    public ResponseEntity<String> requestPasswordReset(@Valid @RequestBody TokenRequest request) {
+        var email = jwtUtils.getEmailFromToken(request.getToken());
+        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        var token = UUID.randomUUID().toString();
+        var savedToken = verificationTokenRepository.save(new VerificationToken(token, user));
+        mailSender.sendPasswordResetEmail(savedToken, "http://localhost:3000/reset/");
+        return ResponseEntity.ok("Password reset email sent!");
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        var found = verificationTokenRepository.findByToken(request.getToken());
+        if (found.isPresent()) {
+            var verificationToken = found.get();
+            if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
+                return ResponseEntity.badRequest().body("Verification token expired!");
+            }
+            var user = verificationToken.getUser();
+            user.setPassword(encoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            verificationTokenRepository.delete(verificationToken);
+            return ResponseEntity.ok("Password reset!");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid token");
+        }
     }
 }

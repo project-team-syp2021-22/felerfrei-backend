@@ -36,4 +36,23 @@ public class MailSender {
 
         mailSender.send(mailMessage);
     }
+
+    @SneakyThrows
+    public void sendPasswordResetEmail(VerificationToken token, String siteURL) {
+        var user = token.getUser();
+
+        // read text from file and replace placeholders
+        var text = new String(this.getClass().getResourceAsStream("/email/reset.html").readAllBytes());
+        text = text.replace("{name}", user.getFirstname() + " " + user.getLastname());
+        text = text.replace("{link}", siteURL + token);
+
+        MimeMessage mailMessage = mailSender.createMimeMessage();
+        mailMessage.setSubject("Reset your password!", "UTF-8");
+
+        var helper = new MimeMessageHelper(mailMessage, true, "UTF-8");
+        helper.setTo(user.getEmail());
+        helper.setText(text, true);
+
+        mailSender.send(mailMessage);
+    }
 }
