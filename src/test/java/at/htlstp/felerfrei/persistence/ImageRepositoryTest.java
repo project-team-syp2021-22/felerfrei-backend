@@ -2,6 +2,7 @@ package at.htlstp.felerfrei.persistence;
 
 import at.htlstp.felerfrei.FelerfreibackendApplication;
 import at.htlstp.felerfrei.domain.Image;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -29,10 +30,12 @@ class ImageRepositoryTest {
     @Autowired
     private MockMvc mvc;
 
-    @BeforeEach
+    @AfterEach
     void setUp() {
         imageRepository.deleteAll();
     }
+
+
 
     @Test
     void find_by_id() {
@@ -56,9 +59,7 @@ class ImageRepositoryTest {
 
     @Test
     void save_throws() {
-        assertThrows(Exception.class, () -> {
-            imageRepository.save(new Image(null, null));
-        });
+        assertThrows(Exception.class, () -> imageRepository.save(new Image(null, null)));
     }
 
     @Test

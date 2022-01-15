@@ -7,6 +7,7 @@ import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -43,12 +44,12 @@ class OrderRepositoryTest {
     @Autowired
     private ProductRepository productRepository;
 
-    @BeforeEach
+    @AfterEach
     void setup() {
         orderRepository.deleteAll();
-        roleRepository.deleteAll();
-        userRepository.deleteAll();
         productRepository.deleteAll();
+        userRepository.deleteAll();
+        roleRepository.deleteAll();
     }
 
     @Test

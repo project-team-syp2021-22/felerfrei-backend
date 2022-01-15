@@ -3,6 +3,7 @@ package at.htlstp.felerfrei.persistence;
 import at.htlstp.felerfrei.FelerfreibackendApplication;
 import at.htlstp.felerfrei.domain.Image;
 import at.htlstp.felerfrei.domain.Product;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +27,7 @@ class ProductRepositoryTest {
     @Autowired
     private ProductRepository productRepository;
 
-    @BeforeEach
+    @AfterEach
     void setUp() {
         productRepository.deleteAll();
     }
