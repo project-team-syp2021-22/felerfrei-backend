@@ -89,11 +89,16 @@ public class AuthController {
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
+        if (!signUpRequest.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@.$!%*?&])[A-Za-z\\d@.$!%*?&]{8,}$")) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
+        }
         User user;
         try {
             user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(),
                     encoder.encode(signUpRequest.getPassword()), signUpRequest.getTelephone());
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Password must be at least 8 characters long");
         }
 
