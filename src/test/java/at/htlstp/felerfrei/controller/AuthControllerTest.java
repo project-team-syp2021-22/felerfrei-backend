@@ -109,14 +109,14 @@ class AuthControllerTest {
                                }
                             """))
                     .andDo(print())
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
         }
 
         @Test
         void signup_works() throws Exception {
             mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("""
                                {
-                                    "password" : "password",
+                                    "password" : "password1!A",
                                     "firstname"  :"Hugo",
                                     "lastname" : "Meier",
                                     "email" : "test@test.com",
@@ -319,28 +319,24 @@ class AuthControllerTest {
         @Test
         void request_reset_password_bad_request() throws Exception {
             mvc.perform(post("/auth/requestResetPassword")
-                            .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                            .contentType(MediaType.APPLICATION_JSON).content("""
+                                    {
+                                        "email" : null,
+                                    }
+                                    """))
                     .andDo(print())
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         void request_reset_password_works() throws Exception {
-            // login
-            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
-                    {
-                       "email" : "my@email.com",
-                       "password" : "password"
-                    }
-                    """)).andExpect(status().isOk()).andReturn();
-            var token = new JSONObject(response.getResponse().getContentAsString()).getString("token");
 
             // request password reset
-            mvc.perform(post("/auth/requestResetPassword").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+            mvc.perform(post("/auth/requestResetPassword").contentType(MediaType.APPLICATION_JSON).content("""
                             {
-                                "token" : "%s"
+                                "email" : "my@email.com"
                             }
-                            """, token)))
+                            """))
                     .andDo(print())
                     .andExpect(status().isOk());
 
@@ -350,8 +346,8 @@ class AuthControllerTest {
                             .content(String.format("""
                                                 {
                                                     "token" : "%s",
-                                                    "newPassword" : "newPassword"
-                                                }                  
+                                                    "newPassword" : "newPassword1!A"
+                                                }                
                                     """, inDatabase.getToken())))
                     .andDo(print())
                     .andExpect(status().isOk());
@@ -360,7 +356,7 @@ class AuthControllerTest {
                             .content("""
                                     {
                                        "email" : "my@email.com",
-                                       "password" : "newPassword"
+                                       "password" : "newPassword1!A"
                                     }
                                     """))
                     .andDo(print())
@@ -382,24 +378,15 @@ class AuthControllerTest {
 
         @Test
         void reset_token_expired() throws Exception {
-            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content(""" 
-                                    {
-                                        "email" : "my@email.com",
-                                        "password" : "password"
-                                    }
-                                    """))
-                    .andExpect(status().isOk())
-                    .andReturn();
-            var token = new JSONObject(response.getResponse().getContentAsString()).getString("token");
+
 
             mvc.perform(post("/auth/requestResetPassword")
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
+                            .content(("""
                                     {
-                                        "token" : "%s"
+                                        "email" : "my@email.com"
                                     }
-                                    """, token)))
+                                    """)))
                     .andDo(print())
                     .andExpect(status().isOk());
 

@@ -23,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.Message;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -83,13 +84,13 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @NonNull @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
-        if (!signUpRequest.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@.$!%*?&])[A-Za-z\\d@.$!%*?&]{8,}$")) {
+        if (!passwordIsValid(signUpRequest.getPassword())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
@@ -159,30 +160,41 @@ public class AuthController {
     }
 
     @PostMapping("/requestResetPassword")
-    public ResponseEntity<String> requestPasswordReset(@Valid @RequestBody TokenRequest request) {
-        var email = jwtUtils.getEmailFromToken(request.getToken());
-        var user = userRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public ResponseEntity<MessageResponse> requestPasswordReset(@Valid @RequestBody ResetRequest request) {
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         var token = UUID.randomUUID().toString();
         var savedToken = verificationTokenRepository.save(new VerificationToken(token, user));
         mailSender.sendPasswordResetEmail(savedToken, "http://localhost:3000/reset/");
-        return ResponseEntity.ok("Password reset email sent!");
+        return ResponseEntity.ok(new MessageResponse("Password reset email sent!"));
     }
 
     @PostMapping("/resetPassword")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         var found = verificationTokenRepository.findByToken(request.getToken());
         if (found.isPresent()) {
             var verificationToken = found.get();
             if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
-                return ResponseEntity.badRequest().body("Verification token expired!");
+                return ResponseEntity.badRequest().body(new MessageResponse("Verification token expired!"));
+            }
+            if(!passwordIsValid(request.getNewPassword())) {
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
             }
             var user = verificationToken.getUser();
             user.setPassword(encoder.encode(request.getNewPassword()));
             userRepository.save(user);
             verificationTokenRepository.delete(verificationToken);
-            return ResponseEntity.ok("Password reset!");
+            return ResponseEntity.ok(new MessageResponse("Password reset!"));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Invalid token");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Invalid token"));
         }
+    }
+
+    private boolean passwordIsValid(String password) {
+        if(password == null) {
+            return false;
+        }
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
     }
 }
