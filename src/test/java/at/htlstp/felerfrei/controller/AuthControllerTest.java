@@ -195,6 +195,38 @@ class AuthControllerTest {
 
     @Nested
     class ChangeCredentialsTest {
+
+        @Test
+        void change_credentials_bad_credentials() throws Exception {
+            var loginResponse = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                        "email" : "my@email.com",
+                                        "password" : "password"
+                                    }
+                                    """))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+            var token = new JSONObject(loginResponse.getResponse().getContentAsString()).getString("token");
+
+            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON)
+                    .content(String.format("""
+                            {
+                                "token" : "%s",
+                                "email" : "new@email.com",
+                                "password" : "falsePassword",
+                                "firstname" : "Hugo",
+                                "lastname" : "Meier"
+                            }
+                            """, token)))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest())
+                    .andExpect(content().string("Wrong password"));
+            assertThat(userRepository.findById(testUser.getId()).get().getEmail())
+                    .isEqualTo("my@email.com");
+        }
+
         @Test
         void change_credentials_works() throws Exception {
             var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""

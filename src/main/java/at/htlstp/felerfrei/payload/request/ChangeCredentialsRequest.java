@@ -14,7 +14,7 @@ public class ChangeCredentialsRequest {
     private final String password;
 
     public ChangeCredentialsRequest(@NonNull String token, @NonNull String email, @NonNull String firstname,
-                                    @NonNull String lastname, @NonNull String password, @NonNull String telephone) {
+                                    @NonNull String lastname, @NonNull String password, String telephone) {
         data = new JwtResponse(token, email, firstname, lastname, telephone);
         this.password = password;
     }
