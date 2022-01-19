@@ -3,11 +3,8 @@ package at.htlstp.felerfrei.controller;
 import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.user.User;
 import at.htlstp.felerfrei.domain.user.VerificationToken;
-import at.htlstp.felerfrei.payload.request.ChangeCredentialsRequest;
-import at.htlstp.felerfrei.payload.request.SignupRequest;
-import at.htlstp.felerfrei.payload.request.TokenRequest;
+import at.htlstp.felerfrei.payload.request.*;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
-import at.htlstp.felerfrei.payload.request.LoginRequest;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.RoleRepository;
 import at.htlstp.felerfrei.persistence.UserRepository;
@@ -26,6 +23,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.Message;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -50,7 +48,9 @@ public class AuthController {
 
     private final MailSender mailSender;
 
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, VerificationTokenRepository verificationTokenRepository, RoleRepository roleRepository, PasswordEncoder encoder, JwtUtils jwtUtils, MailSender mailSender) {
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
+                          VerificationTokenRepository verificationTokenRepository, RoleRepository roleRepository,
+                          PasswordEncoder encoder, JwtUtils jwtUtils, MailSender mailSender) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.verificationTokenRepository = verificationTokenRepository;
@@ -73,7 +73,6 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
-        System.out.println(loginRequest.getEmail() + " " + loginRequest.getPassword());
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
@@ -85,17 +84,22 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @NonNull @RequestBody SignupRequest signUpRequest) {
+    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
+        if (!passwordIsValid(signUpRequest.getPassword())) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
+        }
         User user;
         try {
             user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(),
                     encoder.encode(signUpRequest.getPassword()), signUpRequest.getTelephone());
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Password must be at least 8 characters long");
         }
 
@@ -153,5 +157,44 @@ public class AuthController {
         String jwt = jwtUtils.generateToken(authentication);
         var userDetails = (UserDetailsImpl) authentication.getPrincipal();
         return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
+    }
+
+    @PostMapping("/requestResetPassword")
+    public ResponseEntity<MessageResponse> requestPasswordReset(@Valid @RequestBody ResetRequest request) {
+        var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        var token = UUID.randomUUID().toString();
+        var savedToken = verificationTokenRepository.save(new VerificationToken(token, user));
+        mailSender.sendPasswordResetEmail(savedToken, "http://localhost:3000/reset/");
+        return ResponseEntity.ok(new MessageResponse("Password reset email sent!"));
+    }
+
+    @PostMapping("/resetPassword")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        var found = verificationTokenRepository.findByToken(request.getToken());
+        if (found.isPresent()) {
+            var verificationToken = found.get();
+            if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
+                return ResponseEntity.badRequest().body(new MessageResponse("Verification token expired!"));
+            }
+            if(!passwordIsValid(request.getNewPassword())) {
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
+            }
+            var user = verificationToken.getUser();
+            user.setPassword(encoder.encode(request.getNewPassword()));
+            userRepository.save(user);
+            verificationTokenRepository.delete(verificationToken);
+            return ResponseEntity.ok(new MessageResponse("Password reset!"));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new MessageResponse("Invalid token"));
+        }
+    }
+
+    private boolean passwordIsValid(String password) {
+        if(password == null) {
+            return false;
+        }
+        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
     }
 }

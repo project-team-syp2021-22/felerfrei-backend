@@ -34,10 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-        classes = FelerfreibackendApplication.class
-)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK, classes = FelerfreibackendApplication.class)
 @AutoConfigureMockMvc
 @TestPropertySource(locations = "classpath:application-integrationtest.properties")
 class AuthControllerTest {
@@ -57,13 +54,16 @@ class AuthControllerTest {
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
 
+    private User testUser;
+
     @BeforeEach
     void setup() {
         var role = new Role(null, RoleAuthority.ROLE_USER);
         roleRepository.save(role);
-        var user = new User(1, "Firstname", "Lastname", "my@email.com", encoder.encode("password"), true, null, role);
+        var user = new User(1, "Firstname", "Lastname", "my@email.com",
+                encoder.encode("password"), true, null, role);
         user.setRole(role);
-        userRepository.save(user);
+        testUser = userRepository.save(user);
     }
 
     @AfterEach
@@ -85,15 +85,14 @@ class AuthControllerTest {
     class SignUpTest {
         @Test
         void test_signup_null_email() throws Exception {
-            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                        {
-                                            "email": null,
-                                            "password": "test"
-                                            "firstName": "test",
-                                            "lastName": "test"
-                                        }
-                                    """))
+            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).content("""
+                                {
+                                    "email": null,
+                                    "password": "test"
+                                    "firstName": "test",
+                                    "lastName": "test"
+                                }
+                            """))
                     .andDo(print())
                     .andExpect(status().isBadRequest())
                     .andExpect(content().string("null value in request"));
@@ -101,50 +100,44 @@ class AuthControllerTest {
 
         @Test
         void signup_null_password() throws Exception {
-            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .content("""
-                                       {
-                                           "firstname"  :"Hugo",
-                                           "lastname" : "Meier",
-                                           "email" : "test@test.com",
-                                           "telephone" : null
-                                       }
-                                    """))
+            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("""
+                               {
+                                   "firstname"  :"Hugo",
+                                   "lastname" : "Meier",
+                                   "email" : "test@test.com",
+                                   "telephone" : null
+                               }
+                            """))
                     .andDo(print())
-                    .andExpect(status().isBadRequest());
+                    .andExpect(status().isConflict());
         }
 
         @Test
         void signup_works() throws Exception {
-            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .content("""
-                                       {
-                                            "password" : "password",
-                                            "firstname"  :"Hugo",
-                                            "lastname" : "Meier",
-                                            "email" : "test@test.com",
-                                            "telephone" : "null"
-                                       }
-                                    """))
+            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("""
+                               {
+                                    "password" : "password1!A",
+                                    "firstname"  :"Hugo",
+                                    "lastname" : "Meier",
+                                    "email" : "test@test.com",
+                                    "telephone" : "null"
+                               }
+                            """))
                     .andDo(print())
                     .andExpect(status().isOk());
-            assertThat(userRepository.findByEmail("test@test.com").isPresent()).isTrue();
+            assertThat(userRepository.findByEmail("test@test.com")).isPresent();
         }
 
         @Test
         void signup_already_exists() throws Exception {
-            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON)
-                            .accept(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                         "password" : "password",
-                                         "firstname"  :"Hugo",
-                                         "lastname" : "Meier",
-                                         "email" : "my@email.com"
-                                    }
-                                         """))
+            mvc.perform(post("/auth/signup").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content("""
+                            {
+                                 "password" : "password",
+                                 "firstname"  :"Hugo",
+                                 "lastname" : "Meier",
+                                 "email" : "my@email.com"
+                            }
+                                 """))
                     .andDo(print())
                     .andExpect(status().isBadRequest());
         }
@@ -154,39 +147,36 @@ class AuthControllerTest {
     class LoginTest {
         @Test
         void test_password_is_null_login() throws Exception {
-            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                        {
-                                            "email": "test@testasdf.com",
-                                            "password": null
-                                        }
-                                    """))
+            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
+                                {
+                                    "email": "test@testasdf.com",
+                                    "password": null
+                                }
+                            """))
                     .andDo(print())
                     .andExpect(status().isBadRequest());
         }
 
         @Test
         void login_works() throws Exception {
-            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                        "email" : "my@email.com",
-                                        "password" : "password"
-                                    }
-                                    """))
+            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                                "email" : "my@email.com",
+                                "password" : "password"
+                            }
+                            """))
                     .andDo(print())
                     .andExpect(status().isOk());
         }
 
         @Test
         void login_with_null_email() throws Exception {
-            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                        "email" : null,
-                                        "password" : "test"
-                                    }
-                                    """))
+            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                                "email" : null,
+                                "password" : "test"
+                            }
+                            """))
                     .andDo(print())
                     .andExpect(status().isBadRequest())
                     .andExpect(content().string("null value in request"));
@@ -196,8 +186,7 @@ class AuthControllerTest {
         void login_with_no_such_email() throws Exception {
             mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
                             .content(asJsonString(new LoginRequest("does@not.exist", "test")))
-                            .accept(MediaType.APPLICATION_JSON))
-                    .andDo(print())
+                            .accept(MediaType.APPLICATION_JSON)).andDo(print())
                     .andExpect(status().isBadRequest())
                     .andExpect(content().string("Bad credentials"));
         }
@@ -208,78 +197,65 @@ class AuthControllerTest {
     class ChangeCredentialsTest {
         @Test
         void change_credentials_works() throws Exception {
-            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                        "email" : "my@email.com",
-                                        "password" : "password"
-                                    }
-                                    """))
-                    .andReturn();
+            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
+                    {
+                        "email" : "my@email.com",
+                        "password" : "password"
+                    }
+                    """)).andReturn();
             var wrapped = new JSONObject(response.getResponse().getContentAsString());
             var token = wrapped.getString("token");
 
-            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
-                                    {
-                                        "token" : "%s",
-                                        "email" : "my@email.com",
-                                        "password" : "password",
-                                        "firstname" : "Hugo",
-                                        "lastname" : "Meier",
-                                        "telephone" : "0123456789"
-                                    }
-                                    """, token)))
-                    .andDo(print())
-                    .andExpect(status().isOk());
+            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+                    {
+                        "token" : "%s",
+                        "email" : "my@email.com",
+                        "password" : "password",
+                        "firstname" : "Hugo",
+                        "lastname" : "Meier",
+                        "telephone" : "0123456789"
+                    }
+                    """, token))).andDo(print()).andExpect(status().isOk());
 
-            assertThat(userRepository.findByEmail("my@email.com").get().getTelephonenumber()).isNotNull();
+            assertThat(userRepository.findByEmail(testUser.getEmail()).get().getTelephonenumber()).isNotNull();
         }
 
         @Test
         void change_credentials_no_email_present() throws Exception {
-            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                            .content("""
-                                    {
-                                        "email" : "my@email.com",
-                                        "password" : "password"
-                                    }
-                                    """))
-                    .andReturn();
+            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content("""
+                    {
+                        "email" : "my@email.com",
+                        "password" : "password"
+                    }
+                    """)).andReturn();
             var wrapped = new JSONObject(response.getResponse().getContentAsString());
             var token = wrapped.getString("token");
 
-            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
-                                    {
-                                        "token" : "%s",
-                                        "password" : "password",
-                                        "firstname" : "Hugo",
-                                        "lastname" : "Meier",
-                                        "telephone" : "0123456789"
-                                    }
-                                    """, token)))
-                    .andDo(print())
-                    .andExpect(status().isBadRequest());
+            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+                    {
+                        "token" : "%s",
+                        "password" : "password",
+                        "firstname" : "Hugo",
+                        "lastname" : "Meier",
+                        "telephone" : "0123456789"
+                    }
+                    """, token))).andDo(print()).andExpect(status().isBadRequest());
             assertThat(userRepository.findByEmail("my@email.com").get().getTelephonenumber()).isNull();
         }
 
         @ParameterizedTest
         @ValueSource(strings = {"not.a.token", "", "jfks.adl.jf"})
         void change_credentials_invalid_tokens(String token) throws Exception {
-            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
-                                    {
-                                        "token" : "%s",
-                                        "email" : "my@email.com",
-                                        "password" : "password",
-                                        "firstname" : "Hugo",
-                                        "lastname" : "Meier",
-                                        "telephone" : "0123456789"
-                                    }
-                                    """, token)))
-                    .andDo(print())
-                    .andExpect(status().isBadRequest());
+            mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+                    {
+                        "token" : "%s",
+                        "email" : "my@email.com",
+                        "password" : "password",
+                        "firstname" : "Hugo",
+                        "lastname" : "Meier",
+                        "telephone" : "0123456789"
+                    }
+                    """, token))).andDo(print()).andExpect(status().isBadRequest());
             assertThat(userRepository.findByEmail("my@email.com").get().getTelephonenumber()).isNull();
         }
     }
@@ -294,14 +270,11 @@ class AuthControllerTest {
             var verificationToken = new VerificationToken(UUID.randomUUID().toString(), userRepository.save(user));
             verificationTokenRepository.save(verificationToken);
 
-            mvc.perform(post("/auth/verify").contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
-                                    {
-                                        "token" : "%s"
-                                    }
-                                    """, verificationToken.getToken())))
-                    .andDo(print())
-                    .andExpect(status().isOk());
+            mvc.perform(post("/auth/verify").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+                    {
+                        "token" : "%s"
+                    }
+                    """, verificationToken.getToken()))).andDo(print()).andExpect(status().isOk());
 
             assertThat(userRepository.findByEmail("my@mail.com").get().getEnabled()).isTrue();
         }
@@ -315,14 +288,11 @@ class AuthControllerTest {
             verificationToken.setExpiryDate(LocalDateTime.now().minusDays(1));
             verificationTokenRepository.save(verificationToken);
 
-            mvc.perform(post("/auth/verify").contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
-                                    {
-                                        "token" : "%s"
-                                    }
-                                    """, verificationToken.getToken())))
-                    .andDo(print())
-                    .andExpect(status().isBadRequest());
+            mvc.perform(post("/auth/verify").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+                    {
+                        "token" : "%s"
+                    }
+                    """, verificationToken.getToken()))).andDo(print()).andExpect(status().isBadRequest());
 
             assertThat(userRepository.findByEmail("my@mail.com").get().getEnabled()).isFalse();
         }
@@ -334,16 +304,105 @@ class AuthControllerTest {
             user.setRole(role);
             userRepository.save(user);
 
-            mvc.perform(post("/auth/verify").contentType(MediaType.APPLICATION_JSON)
-                            .content(String.format("""
+            mvc.perform(post("/auth/verify").contentType(MediaType.APPLICATION_JSON).content(String.format("""
+                    {
+                        "token" : "%s"
+                    }
+                    """, "i-do-not-exist"))).andDo(print()).andExpect(status().isNotFound());
+
+            assertThat(userRepository.findByEmail("my@mail.com").get().getEnabled()).isFalse();
+        }
+    }
+
+    @Nested
+    class ResetPasswordTest {
+        @Test
+        void request_reset_password_bad_request() throws Exception {
+            mvc.perform(post("/auth/requestResetPassword")
+                            .contentType(MediaType.APPLICATION_JSON).content("""
                                     {
-                                        "token" : "%s"
+                                        "email" : null,
                                     }
+                                    """))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        void request_reset_password_works() throws Exception {
+
+            // request password reset
+            mvc.perform(post("/auth/requestResetPassword").contentType(MediaType.APPLICATION_JSON).content("""
+                            {
+                                "email" : "my@email.com"
+                            }
+                            """))
+                    .andDo(print())
+                    .andExpect(status().isOk());
+
+            var inDatabase = verificationTokenRepository.findByUser(testUser);
+            // reset password
+            mvc.perform(post("/auth/resetPassword").contentType(MediaType.APPLICATION_JSON)
+                            .content(String.format("""
+                                                {
+                                                    "token" : "%s",
+                                                    "newPassword" : "newPassword1!A"
+                                                }                
+                                    """, inDatabase.getToken())))
+                    .andDo(print())
+                    .andExpect(status().isOk());
+            // check if password has been changed
+            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                       "email" : "my@email.com",
+                                       "password" : "newPassword1!A"
+                                    }
+                                    """))
+                    .andDo(print())
+                    .andExpect(status().isOk());
+        }
+
+        @Test
+        void reset_invalid_token() throws Exception {
+            mvc.perform(post("/auth/resetPassword").contentType(MediaType.APPLICATION_JSON)
+                            .content(String.format("""
+                                                {
+                                                    "token" : "%s",
+                                                    "newPassword" : "newPassword"
+                                                }                  
                                     """, "i-do-not-exist")))
                     .andDo(print())
                     .andExpect(status().isNotFound());
+        }
 
-            assertThat(userRepository.findByEmail("my@mail.com").get().getEnabled()).isFalse();
+        @Test
+        void reset_token_expired() throws Exception {
+
+
+            mvc.perform(post("/auth/requestResetPassword")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(("""
+                                    {
+                                        "email" : "my@email.com"
+                                    }
+                                    """)))
+                    .andDo(print())
+                    .andExpect(status().isOk());
+
+            var vToken = verificationTokenRepository.findByUser(testUser);
+            vToken.setExpiryDate(LocalDateTime.now().minusDays(1));
+            verificationTokenRepository.save(vToken);
+
+            mvc.perform(post("/auth/resetPassword").contentType(MediaType.APPLICATION_JSON)
+                            .content(String.format("""
+                                        {
+                                            "token" : "%s",
+                                            "newPassword" : "newPassword"
+                                        }
+                                    """, vToken.getToken())))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
         }
     }
 }
