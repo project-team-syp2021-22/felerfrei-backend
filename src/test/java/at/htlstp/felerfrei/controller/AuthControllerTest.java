@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -211,15 +212,15 @@ class AuthControllerTest {
             var token = new JSONObject(loginResponse.getResponse().getContentAsString()).getString("token");
 
             mvc.perform(post("/auth/changeCredentials").contentType(MediaType.APPLICATION_JSON)
-                    .content(String.format("""
-                            {
-                                "token" : "%s",
-                                "email" : "new@email.com",
-                                "password" : "falsePassword",
-                                "firstname" : "Hugo",
-                                "lastname" : "Meier"
-                            }
-                            """, token)))
+                            .content(String.format("""
+                                    {
+                                        "token" : "%s",
+                                        "email" : "new@email.com",
+                                        "password" : "falsePassword",
+                                        "firstname" : "Hugo",
+                                        "lastname" : "Meier"
+                                    }
+                                    """, token)))
                     .andDo(print())
                     .andExpect(status().isBadRequest())
                     .andExpect(content().string("Wrong password"));
@@ -435,6 +436,62 @@ class AuthControllerTest {
                                     """, vToken.getToken())))
                     .andDo(print())
                     .andExpect(status().isBadRequest());
+        }
+    }
+
+    @Nested
+    class CheckTokenTest {
+
+        @Test
+        void works() throws Exception {
+            var response = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {
+                                       "email" : "my@email.com",
+                                       "password" : "password"
+                                    }
+                                    """))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            var token = new JSONObject(response.getResponse().getContentAsString()).getString("token");
+
+            response = mvc.perform(post("/auth/check").contentType(MediaType.APPLICATION_JSON)
+                    .content(String.format("""
+                            {
+                                "token" : "%s"
+                            }
+                            """, token)))
+                    .andDo(print())
+                    .andExpect(status().isOk())
+                    .andReturn();
+            var message = new JSONObject(response.getResponse().getContentAsString()).getString("message");
+            assertEquals("Valid token", message);
+        }
+
+        @Test
+        void invalid_token() throws Exception {
+            var response = mvc.perform(post("/auth/check").contentType(MediaType.APPLICATION_JSON)
+                    .content("""
+                            {
+                                "token" : "id-do-not-exist"
+                            }
+                            """))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest())
+                    .andReturn();
+            var message = new JSONObject(response.getResponse().getContentAsString()).getString("message");
+            assertEquals("Invalid token", message);
+        }
+
+        @Test
+        void null_request() throws Exception {
+            mvc.perform(post("/auth/check").contentType(MediaType.APPLICATION_JSON)
+                    .content(""))
+                    .andDo(print())
+                    .andExpect(status().isBadRequest());
+
         }
     }
 }
