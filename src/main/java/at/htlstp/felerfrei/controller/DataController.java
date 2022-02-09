@@ -4,6 +4,8 @@ import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,10 +28,10 @@ public class DataController {
     }
 
     @GetMapping("/products")
-    public List<Product> itWorks() {
-        return productRepository.findAll();
+    public Page<Product> getProducts(Pageable pageable) {
+        System.out.println(pageable.getPageSize());
+        return productRepository.findAllByPublished(true, pageable);
     }
-
 
     @GetMapping("/orders")
     @PreAuthorize("hasRole('ROLE_USER')")
