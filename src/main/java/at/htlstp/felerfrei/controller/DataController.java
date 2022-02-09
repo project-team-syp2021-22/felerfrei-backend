@@ -27,6 +27,19 @@ public class DataController {
         this.orderRepository = orderRepository;
     }
 
+
+    /**
+     * Returns a list of all products which are already published.
+     * <pre>
+     * How to use:
+     * <code>
+     * get(".../api/products?size=10&page=0")
+     * </code>Returns a page of products with size 10
+     * </pre>
+     *
+     * @param pageable defines the page and the size of the result
+     * @return A Page of products, depending on the pageable
+     */
     @GetMapping("/products")
     public Page<Product> getProducts(Pageable pageable) {
         System.out.println(pageable.getPageSize());
