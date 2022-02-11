@@ -4,13 +4,12 @@ import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
+import lombok.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -42,7 +41,6 @@ public class DataController {
      */
     @GetMapping("/products")
     public Page<Product> getProducts(Pageable pageable) {
-        System.out.println(pageable.getPageSize());
         return productRepository.findAllByPublished(true, pageable);
     }
 
