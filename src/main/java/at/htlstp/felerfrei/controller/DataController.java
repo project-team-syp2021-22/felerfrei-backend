@@ -35,7 +35,15 @@ public class DataController {
      * get(".../api/products?size=10&page=0")
      * </code>Returns a page of products with size 10
      * </pre>
-     *
+     *  If you want to sort the products you can use the following query parameters:
+     *  <pre>
+     *      ?sort=name,asc
+     *      ?sort=name,desc
+     *      ?sort=price,asc
+     *      ?sort=price,desc
+     *      ?sort=id,asc
+     *      ?sort=id,desc
+     *  </pre>
      * @param pageable defines the page and the size of the result
      * @return A Page of products, depending on the pageable
      */
