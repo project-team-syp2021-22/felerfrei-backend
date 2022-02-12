@@ -43,7 +43,9 @@ public class DataController {
      *      ?sort=price,desc
      *      ?sort=id,asc
      *      ?sort=id,desc
+     *      ...
      *  </pre>
+     *  For more filtering or sorting options follow the documentation of spring data jpa.
      * @param pageable defines the page and the size of the result
      * @return A Page of products, depending on the pageable
      */
