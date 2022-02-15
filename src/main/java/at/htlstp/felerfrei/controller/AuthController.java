@@ -142,6 +142,9 @@ public class AuthController {
         if (!encoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Wrong password");
 
+        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+            throw new BadCredentialsException("Email already in use");
+        }
         user.setEmail(request.getEmail());
         user.setFirstname(request.getFirstname());
         user.setLastname(request.getLastname());
@@ -154,9 +157,11 @@ public class AuthController {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
         String jwt = jwtUtils.generateToken(authentication);
         var userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        return ResponseEntity.ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
+        return ResponseEntity
+                .ok(new JwtResponse(jwt, userDetails.getUsername(), user.getFirstname(), user.getLastname(), user.getTelephonenumber()));
     }
 
     @PostMapping("/requestResetPassword")
@@ -176,7 +181,7 @@ public class AuthController {
             if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Verification token expired!"));
             }
-            if(!passwordIsValid(request.getNewPassword())) {
+            if (!passwordIsValid(request.getNewPassword())) {
                 return ResponseEntity
                         .status(HttpStatus.CONFLICT)
                         .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
@@ -192,7 +197,7 @@ public class AuthController {
     }
 
     private boolean passwordIsValid(String password) {
-        if(password == null) {
+        if (password == null) {
             return false;
         }
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
