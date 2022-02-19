@@ -68,11 +68,11 @@ public class DataController {
 
 
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<Resource> image(@PathVariable long id) throws IOException {
+    public ResponseEntity<Resource> image(@PathVariable int id) throws IOException {
         if (id == -1)
             return null;
 
-        var image = imageService.getImage(id);
+        var image = imageService.getImage(id, "");
 
         return ResponseEntity
                 .status(HttpStatus.OK)

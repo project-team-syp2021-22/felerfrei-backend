@@ -13,11 +13,12 @@ public interface ImageService {
      * @param file
      * @return id of the image
      */
-    long saveImage(MultipartFile file);
+    int saveImage(MultipartFile file, int id, String directory);
 
-    List<Long> saveImages(List<MultipartFile> files);
+    List<Integer> saveImages(List<MultipartFile> files);
 
-    ByteArrayResource getImage(long id) throws IOException;
+    ByteArrayResource getImage(int id, String directory) throws IOException;
 
+    void delete(int id, String directory);
 
 }

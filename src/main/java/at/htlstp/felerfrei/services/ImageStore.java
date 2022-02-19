@@ -1,26 +1,32 @@
 package at.htlstp.felerfrei.services;
 
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
 
-@Service("imageStore")
+@Repository("imageStore")
 public class ImageStore implements ImageService{
+
     @Override
-    public long saveImage(MultipartFile file) {
+    public int saveImage(MultipartFile file, int id, String directory) {
         return 0;
     }
 
     @Override
-    public List<Long> saveImages(List<MultipartFile> files) {
+    public List<Integer> saveImages(List<MultipartFile> files) {
         return null;
     }
 
     @Override
-    public ByteArrayResource getImage(long id) throws IOException {
+    public ByteArrayResource getImage(int id, String directory) throws IOException {
         return null;
+    }
+
+    @Override
+    public void delete(int id, String directory) {
+
     }
 }
