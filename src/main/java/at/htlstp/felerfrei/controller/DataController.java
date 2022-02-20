@@ -4,7 +4,7 @@ import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
-import at.htlstp.felerfrei.services.ImageService;
+import at.htlstp.felerfrei.services.FileService;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,12 +24,12 @@ public class DataController {
 
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
-    private final ImageService imageService;
+    private final FileService imageLocationService;
 
-    public DataController(ProductRepository productRepository, OrderRepository orderRepository, ImageService imageService) {
+    public DataController(ProductRepository productRepository, OrderRepository orderRepository, FileService imageLocationService) {
         this.productRepository = productRepository;
         this.orderRepository = orderRepository;
-        this.imageService = imageService;
+        this.imageLocationService = imageLocationService;
     }
 
 
@@ -72,11 +72,15 @@ public class DataController {
         if (id == -1)
             return null;
 
-        var image = imageService.getImage(id, "");
+        var image = imageLocationService.get(id);
+
+        if(image.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .contentLength(image.contentLength())
-                .body(image);
+                .contentLength(image.get().contentLength())
+                .body(image.get());
     }
 }

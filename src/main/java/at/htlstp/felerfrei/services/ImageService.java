@@ -3,8 +3,7 @@ package at.htlstp.felerfrei.services;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.List;
+import java.util.Optional;
 
 public interface ImageService {
 
@@ -13,12 +12,10 @@ public interface ImageService {
      * @param file
      * @return id of the image
      */
-    int saveImage(MultipartFile file, int id, String directory);
+    boolean saveImage(MultipartFile file, String directory);
 
-    List<Integer> saveImages(List<MultipartFile> files);
+    Optional<ByteArrayResource> getImage(String directory);
 
-    ByteArrayResource getImage(int id, String directory) throws IOException;
-
-    void delete(int id, String directory);
+    void delete(String directory);
 
 }
