@@ -40,6 +40,8 @@ public class ImageStore implements ImageService {
     @Override
     public void delete(String path) {
         var file = new File(path);
-        Files.delete(file.toPath());
+        if (Files.exists(file.toPath())) {
+            Files.delete(file.toPath());
+        }
     }
 }
