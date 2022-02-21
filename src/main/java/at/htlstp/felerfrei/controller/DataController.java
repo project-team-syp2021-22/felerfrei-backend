@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
@@ -69,9 +70,6 @@ public class DataController {
 
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
     public ResponseEntity<Resource> image(@PathVariable int id) throws IOException {
-        if (id == -1)
-            return null;
-
         var image = imageLocationService.get(id);
 
         if(image.isEmpty()) {
@@ -82,5 +80,13 @@ public class DataController {
                 .status(HttpStatus.OK)
                 .contentLength(image.get().contentLength())
                 .body(image.get());
+    }
+
+    @PostMapping("/upload")
+    public void upload(@RequestParam(value= "image")List<MultipartFile> files) {
+        String directory = "images";
+        for (MultipartFile file : files) {
+            imageLocationService.save(file, directory);
+        }
     }
 }

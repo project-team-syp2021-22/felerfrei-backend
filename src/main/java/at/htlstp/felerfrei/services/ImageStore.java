@@ -15,12 +15,15 @@ import java.util.Optional;
 @Repository("imageService")
 public class ImageStore implements ImageService {
 
+    @SneakyThrows
     @Override
     public boolean saveImage(MultipartFile file, String path) {
+        System.out.println(path);
         var savedFile = new File(path);
         try (var output = new DataOutputStream(new FileOutputStream(savedFile))) {
             output.write(file.getBytes());
         } catch (IOException e) {
+            e.printStackTrace();
             return false;
         }
         return true;
