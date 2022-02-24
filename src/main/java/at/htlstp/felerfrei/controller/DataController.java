@@ -1,9 +1,11 @@
 package at.htlstp.felerfrei.controller;
 
 import at.htlstp.felerfrei.domain.Product;
+import at.htlstp.felerfrei.domain.Project;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
+import at.htlstp.felerfrei.persistence.ProjectRepository;
 import at.htlstp.felerfrei.services.FileService;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
@@ -23,11 +25,13 @@ import java.util.List;
 public class DataController {
 
     private final ProductRepository productRepository;
+    private final ProjectRepository projectRepository;
     private final OrderRepository orderRepository;
     private final FileService imageLocationService;
 
-    public DataController(ProductRepository productRepository, OrderRepository orderRepository, FileService imageLocationService) {
+    public DataController(ProductRepository productRepository, ProjectRepository projectRepository, OrderRepository orderRepository, FileService imageLocationService) {
         this.productRepository = productRepository;
+        this.projectRepository = projectRepository;
         this.orderRepository = orderRepository;
         this.imageLocationService = imageLocationService;
     }
@@ -58,6 +62,11 @@ public class DataController {
     @GetMapping("/products")
     public Page<Product> getProducts(Pageable pageable) {
         return productRepository.findAllByPublished(true, pageable);
+    }
+
+    @GetMapping("/projects")
+    public Page<Project> getProjects(Pageable pageable) {
+        return projectRepository.findAllByPublished(true, pageable);
     }
 
     @GetMapping("/orders")
