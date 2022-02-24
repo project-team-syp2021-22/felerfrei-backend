@@ -15,9 +15,9 @@ values (2, 'Tisch', 'Nicht veröffentlicht', false, 10.00);
 insert into product (id, name, description, ispublished, price)
 values (3, 'Heisl', 'Gute Stück!', true, 69.00);
 
-insert into project (id, description, title, ispublished, date)
+insert into project (id, description, title, is_published, date)
 values (1, 'Bei diesem Projekt habe ich die Küche montiert!', 'Küchenmontage', true, '2019-01-01');
-insert into project (id, description, title, ispublished, date)
+insert into project (id, description, title, is_published, date)
 values (2, 'Hier wurde ein Tisch gebaut lol', 'Supa Tisch', false, '2019-01-01');
 
 insert into "order" (id, orderdate, isordered, order_address, user_id)

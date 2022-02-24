@@ -1,6 +1,5 @@
 package at.htlstp.felerfrei.persistence;
 
-import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.domain.Project;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

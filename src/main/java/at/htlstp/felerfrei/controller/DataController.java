@@ -66,6 +66,7 @@ public class DataController {
 
     @GetMapping("/projects")
     public Page<Project> getProjects(Pageable pageable) {
+        System.out.println(projectRepository.findAll());
         return projectRepository.findAllByPublished(true, pageable);
     }
 

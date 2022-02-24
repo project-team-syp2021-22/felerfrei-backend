@@ -27,7 +27,7 @@ public class Project implements Showable {
     @Column(name = "title", length = 256)
     private String title;
 
-    @Column(name = "isPublished")
+    @Column(name = "is_published")
     private Boolean published;
 
     @ManyToMany(cascade = CascadeType.ALL)
