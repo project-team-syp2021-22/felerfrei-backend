@@ -15,7 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -69,7 +68,7 @@ public class DataController {
 
 
     @GetMapping(value = "/image/{id}", produces = MediaType.IMAGE_JPEG_VALUE)
-    public ResponseEntity<Resource> image(@PathVariable int id) throws IOException {
+    public ResponseEntity<Resource> image(@PathVariable int id) {
         var image = imageLocationService.get(id);
 
         if(image.isEmpty()) {
@@ -84,7 +83,7 @@ public class DataController {
 
     @PostMapping("/upload")
     public void upload(@RequestParam(value= "image")List<MultipartFile> files) {
-        String directory = "images";
+        String directory = "/img";
         for (MultipartFile file : files) {
             imageLocationService.save(file, directory);
         }

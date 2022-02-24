@@ -18,8 +18,7 @@ public class ImageStore implements ImageService {
     @SneakyThrows
     @Override
     public boolean saveImage(MultipartFile file, String path) {
-        System.out.println(path);
-        var savedFile = new File(path);
+        var savedFile = new File(path).getAbsolutePath();
         try (var output = new DataOutputStream(new FileOutputStream(savedFile))) {
             output.write(file.getBytes());
         } catch (IOException e) {
