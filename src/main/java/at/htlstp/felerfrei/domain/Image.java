@@ -1,5 +1,6 @@
 package at.htlstp.felerfrei.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class Image {
 
     @Column(name = "path", nullable = false, length = 512)
     @Setter
+    @JsonIgnore
     private String path;
 
     @Override
