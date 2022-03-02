@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -65,6 +66,12 @@ public class DataController {
     @GetMapping("/products")
     public Page<Product> getProducts(Pageable pageable) {
         return productRepository.findAllByPublished(true, pageable);
+    }
+
+    @GetMapping("/products/{id}")
+    public ResponseEntity<Product> getProduct(@PathVariable Long id) {
+        var found = productRepository.findById(id);
+        return found.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/projects")
