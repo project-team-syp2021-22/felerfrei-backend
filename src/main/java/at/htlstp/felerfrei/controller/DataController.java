@@ -68,8 +68,8 @@ public class DataController {
         return productRepository.findAllByPublished(true, pageable);
     }
 
-    @GetMapping("/products/{id}")
-    public ResponseEntity<Product> getProduct(@PathVariable Long id) {
+    @GetMapping("/product/{id}")
+    public ResponseEntity<Product> getProduct(@PathVariable Integer id) {
         var found = productRepository.findById(id);
         return found.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
