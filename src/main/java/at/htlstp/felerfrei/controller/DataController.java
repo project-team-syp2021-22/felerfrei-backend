@@ -7,6 +7,7 @@ import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
 import at.htlstp.felerfrei.persistence.ProjectRepository;
 import at.htlstp.felerfrei.services.FileService;
+import at.htlstp.felerfrei.services.pdf.PDFOrderConfirmationService;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,12 +29,14 @@ public class DataController {
     private final ProjectRepository projectRepository;
     private final OrderRepository orderRepository;
     private final FileService imageLocationService;
+    private final PDFOrderConfirmationService orderConfirmationService;
 
-    public DataController(ProductRepository productRepository, ProjectRepository projectRepository, OrderRepository orderRepository, FileService imageLocationService) {
+    public DataController(ProductRepository productRepository, ProjectRepository projectRepository, OrderRepository orderRepository, FileService imageLocationService, PDFOrderConfirmationService orderConfirmationService) {
         this.productRepository = productRepository;
         this.projectRepository = projectRepository;
         this.orderRepository = orderRepository;
         this.imageLocationService = imageLocationService;
+        this.orderConfirmationService = orderConfirmationService;
     }
 
 
@@ -91,6 +94,7 @@ public class DataController {
                 .body(image.get());
     }
 
+    // TODO: remove this before deployment
     @PostMapping("/upload")
     public void upload(@RequestParam(value= "image")List<MultipartFile> files) {
         String directory = "/img";

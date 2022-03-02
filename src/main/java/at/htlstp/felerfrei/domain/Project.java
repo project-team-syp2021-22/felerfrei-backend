@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 import javax.persistence.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,6 +27,9 @@ public class Project implements Showable {
 
     @Column(name = "title", length = 256)
     private String title;
+
+    @Column(name="date")
+    private LocalDate date;
 
     @Column(name = "is_published")
     private Boolean published;

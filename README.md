@@ -23,9 +23,37 @@ port=yourport (e.g. 587)
 @Autowired
 private Mailsender mailsender;
 
-public void foo() {
+void foo() {
         // ...
         mailSender.sendVerificationEmail(saved,"http://localhost:3000/verify/");
         // ...
 }
 ```
+
+## Order-Confirmation
+
+### Setup
+
+Please provide a 'orderconfirmations' directory.
+
+### Usage
+
+```java
+// ...
+
+@Autowired
+private PDFOrderConfirmationService orderConfirmationService;
+
+void foo() {
+        // ...
+        Order order = ....;
+        orderConfirmationService.writePDF(order);
+        // ...
+}
+```
+
+## Images
+
+### Setup
+
+Please provide a 'images' directory.

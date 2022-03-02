@@ -44,6 +44,14 @@ public class Order {
         return Objects.equals(id, order.id);
     }
 
+    public double calculateTotalPrice() {
+        double totalPrice = 0;
+        for (OrderContent orderContent : orderContents) {
+            totalPrice += orderContent.getAmount() * orderContent.getRetailPrice();
+        }
+        return totalPrice;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(id);
