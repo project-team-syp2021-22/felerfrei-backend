@@ -13,27 +13,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 
+// please do not judge me, I hate myself for this code :)
+// https://www.mysamplecode.com/2012/10/generate-pdf-using-java-and-itext.html
 @Service("pdfWriter")
 public class PDFOrderConfirmationService {
 
+    private static final String PRICE_FORMAT = "%.2f €";
     private BaseFont bfBold;
     private BaseFont bf;
     private int pageNumber = 0;
-    private Order order;
 
     public void writePDF(Order order) {
-        this.order = order;
-        createPDF("filename.pdf");
+        createPDF(order);
     }
 
-    private void createPDF(String pdfFilename) {
+    private void createPDF(Order order) {
 
         Document doc = new Document();
         PdfWriter docWriter = null;
         initializeFonts();
 
         try {
-            String path = "images/" + pdfFilename;
+            String path = "orderconfirmations/" + order.getId() + ".pdf";
             docWriter = PdfWriter.getInstance(doc, new FileOutputStream(path));
             doc.addAuthor("felerfrei");
             doc.addCreationDate();
@@ -52,12 +53,12 @@ public class PDFOrderConfirmationService {
                 if (beginPage) {
                     beginPage = false;
                     generateLayout(cb);
-                    generateHeader(cb);
+                    generateHeader(cb, order);
                     y = 615;
                 }
-                generateDetail(cb, i, y);
+                generateDetail(cb, i, y, order);
                 y = y - 15;
-                if (y < 50) {
+                if (y < 65) {
                     printPageNumber(cb);
                     doc.newPage();
                     beginPage = true;
@@ -65,6 +66,9 @@ public class PDFOrderConfirmationService {
             }
             printPageNumber(cb);
 
+            createContent(cb, 560, 55, String.format(PRICE_FORMAT, order.calculateTotalPrice()), PdfContentByte.ALIGN_RIGHT);
+            cb.rectangle(500, 50, 70, 20);
+            cb.stroke();
         } catch (Exception dex) {
             dex.printStackTrace();
         } finally {
@@ -95,16 +99,16 @@ public class PDFOrderConfirmationService {
             createHeadings(cb, 422, 703, "Bestelldatum");
 
             // Invoice Detail box layout
-            cb.rectangle(40, 50, 530, 600);
+            cb.rectangle(40, 70, 530, 580);
             cb.moveTo(40, 630);
             cb.lineTo(570, 630);
-            cb.moveTo(70, 50);
+            cb.moveTo(70, 70);
             cb.lineTo(70, 650);
-            cb.moveTo(150, 50);
+            cb.moveTo(150, 70);
             cb.lineTo(150, 650);
-            cb.moveTo(430, 50);
+            cb.moveTo(430, 70);
             cb.lineTo(430, 650);
-            cb.moveTo(500, 50);
+            cb.moveTo(500, 70);
             cb.lineTo(500, 650);
             cb.stroke();
 
@@ -127,7 +131,7 @@ public class PDFOrderConfirmationService {
 
     }
 
-    private void generateHeader(PdfContentByte cb) {
+    private void generateHeader(PdfContentByte cb, Order order) {
         try {
 
             createHeadings(cb, 40, 750, "Felerfrei");
@@ -136,8 +140,8 @@ public class PDFOrderConfirmationService {
             createHeadings(cb, 40, 705, "1040 Wien");
             createHeadings(cb, 40, 690, "Österreich");
 
-            createHeadings(cb, 482, 743, String.valueOf(order.getUser().getId()));
-            createHeadings(cb, 482, 723, String.valueOf(order.getId()));
+            createHeadings(cb, 500, 743, String.valueOf(order.getUser().getId()));
+            createHeadings(cb, 500, 723, String.valueOf(order.getId()));
             createHeadings(cb, 482, 703, order.getOrderdate().format(DateTimeFormatter.ofPattern("dd.MM.yyyy")));
 
         } catch (Exception ex) {
@@ -146,19 +150,20 @@ public class PDFOrderConfirmationService {
 
     }
 
-    private void generateDetail(PdfContentByte cb, int index, int y) {
+    private void generateDetail(PdfContentByte cb, int index, int y, Order order) {
 
         try {
             var content = order.getOrderContents().get(index);
             createContent(cb, 58, y, String.valueOf(content.getAmount()), PdfContentByte.ALIGN_RIGHT);
-            createContent(cb, 72, y, "id", PdfContentByte.ALIGN_LEFT);
+            createContent(cb, 80, y, String.valueOf(content.getProduct().getId()), PdfContentByte.ALIGN_LEFT);
             createContent(cb, 152, y, content.getProduct().getName(), PdfContentByte.ALIGN_LEFT);
+
 
             double price = content.getRetailPrice();
             double extPrice = content.getAmount() * price;
 
-            createContent(cb, 495, y, String.format("%.2f €", price), PdfContentByte.ALIGN_RIGHT);
-            createContent(cb, 565, y, String.format("%.2f €", extPrice), PdfContentByte.ALIGN_RIGHT);
+            createContent(cb, 495, y, String.format(PRICE_FORMAT, price), PdfContentByte.ALIGN_RIGHT);
+            createContent(cb, 565, y, String.format(PRICE_FORMAT, extPrice), PdfContentByte.ALIGN_RIGHT);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

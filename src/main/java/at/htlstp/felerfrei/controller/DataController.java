@@ -94,6 +94,7 @@ public class DataController {
                 .body(image.get());
     }
 
+    // TODO: remove this before deployment
     @PostMapping("/upload")
     public void upload(@RequestParam(value= "image")List<MultipartFile> files) {
         String directory = "/img";
