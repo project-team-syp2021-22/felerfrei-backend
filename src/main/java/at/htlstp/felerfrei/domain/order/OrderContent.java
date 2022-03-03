@@ -21,6 +21,7 @@ public class OrderContent {
     @Column(name="order_product_id")
     private Integer id;
 
+    @Setter
     private Integer amount;
 
     private String extrawurscht;

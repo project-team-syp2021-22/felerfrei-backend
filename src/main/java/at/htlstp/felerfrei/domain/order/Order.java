@@ -61,9 +61,25 @@ public class Order {
         if(this.orderContents== null) {
             this.orderContents = new ArrayList<>();
         }
+        for(var orderContent : orderContents) {
+            if(equalOrderContent(orderContent, content)) {
+                orderContent.setAmount(orderContent.getAmount() + 1);
+                return;
+            }
+        }
 
-        this.orderContents.add(content);
         content.setOrder(this);
+        this.orderContents.add(content);
+    }
+
+    private boolean equalOrderContent(@NonNull OrderContent content1, @NonNull OrderContent content2) {
+        if(!content1.getProduct().equals(content2.getProduct()))
+            return false;
+        if(content1.getExtrawurscht() == null && content2.getExtrawurscht() == null)
+            return true;
+        if(content1.getExtrawurscht() == null || content2.getExtrawurscht() == null)
+            return false;
+        return content1.getExtrawurscht().equals(content2.getExtrawurscht());
     }
 
     public void setOrderContent(List<OrderContent> orderContents) {
