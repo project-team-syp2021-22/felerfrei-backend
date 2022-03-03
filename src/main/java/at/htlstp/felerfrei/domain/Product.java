@@ -33,6 +33,9 @@ public class Product implements Showable {
     @Column(name = "price")
     private Double price;
 
+    @Column(name="material")
+    private String material;
+
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name="product_image",

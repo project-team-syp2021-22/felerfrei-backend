@@ -40,7 +40,7 @@ class ProductRepositoryTest {
                 new Image(null, "path3")
         );
 
-        var product = new Product(null, "name", "description", true, 23D, images);
+        var product = new Product(null, "name", "description", true, 23D,null, images);
         var saved = productRepository.save(product);
 
         assertThat(saved.getImages()).hasSize(3);
@@ -54,7 +54,7 @@ class ProductRepositoryTest {
                 new Image(null, "path3")
         );
 
-        var product = new Product(null, "name", "description", true, 23D, null);
+        var product = new Product(null, "name", "description", true, 23D, null, null);
         product.addAllImages(images);
 
         var saved = productRepository.save(product);

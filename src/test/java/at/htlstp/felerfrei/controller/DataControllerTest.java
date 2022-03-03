@@ -31,10 +31,10 @@ public class DataControllerTest {
     @BeforeEach
     public void setUp() {
         productRepository.deleteAll();
-        productRepository.save(new Product(null, "Tisch", "", true, 13.99, null));
-        productRepository.save(new Product(null, "Stuhl", "", true, 23.99, null));
-        productRepository.save(new Product(null, "Schrank", "", true, 33.99, null));
-        productRepository.save(new Product(null, "Bett", "", false, 43.99, null));
+        productRepository.save(new Product(null, "Tisch", "", true, 13.99, null, null));
+        productRepository.save(new Product(null, "Stuhl", "", true, 23.99, null, null));
+        productRepository.save(new Product(null, "Schrank", "", true, 33.99, null, null));
+        productRepository.save(new Product(null, "Bett", "", false, 43.99, null, null));
     }
 
     @Nested

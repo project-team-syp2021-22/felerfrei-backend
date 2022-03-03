@@ -61,8 +61,8 @@ public class DataController {
      * get(".../api/products?size=10&page=0")
      * </code>Returns a page of products with size 10
      * </pre>
-     *  If you want to sort the products you can use the following query parameters:
-     *  <pre>
+     * If you want to sort the products you can use the following query parameters:
+     * <pre>
      *      ?sort=name,asc
      *      ?sort=name,desc
      *      ?sort=price,asc
@@ -71,7 +71,8 @@ public class DataController {
      *      ?sort=id,desc
      *      ...
      *  </pre>
-     *  For more filtering or sorting options follow the documentation of spring data jpa.
+     * For more filtering or sorting options follow the documentation of spring data jpa.
+     *
      * @param pageable defines the page and the size of the result
      * @return A Page of products, depending on the pageable
      */
@@ -83,6 +84,9 @@ public class DataController {
     @GetMapping("/product/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Integer id) {
         var found = productRepository.findById(id);
+        if (found.isEmpty() || !found.get().getPublished()) {
+            throw new IllegalArgumentException("not found");
+        }
         return found.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -103,7 +107,7 @@ public class DataController {
     public ResponseEntity<Resource> image(@PathVariable int id) {
         var image = imageLocationService.get(id);
 
-        if(image.isEmpty()) {
+        if (image.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
 
@@ -115,7 +119,7 @@ public class DataController {
 
     // TODO: remove this before deployment
     @PostMapping("/upload")
-    public void upload(@RequestParam(value= "image")List<MultipartFile> files) {
+    public void upload(@RequestParam(value = "image") List<MultipartFile> files) {
         String directory = "/img";
         for (MultipartFile file : files) {
             imageLocationService.save(file, directory);
@@ -129,12 +133,12 @@ public class DataController {
         var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
 
         var product = productRepository.findById(request.getProductId()).orElseThrow(() -> new IllegalArgumentException("product not found"));
-        if(!product.getPublished()) {
+        if (!product.getPublished()) {
             throw new IllegalArgumentException("product not found");
         }
 
         var cart = orderRepository.findCartByUser(inDatabase);
-        if(cart.isEmpty()) {
+        if (cart.isEmpty()) {
             var order = new Order(null, LocalDate.now(), false, null, inDatabase, null);
             order.setOrderContent(List.of(new OrderContent(null, 1, "test", product.getPrice(), order, product)));
             orderRepository.save(order);
