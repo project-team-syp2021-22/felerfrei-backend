@@ -1,6 +1,7 @@
 package at.htlstp.felerfrei.domain.order;
 
 import at.htlstp.felerfrei.domain.user.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -31,6 +32,7 @@ public class Order {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private User user;
 
     @OneToMany(mappedBy="order", fetch=FetchType.EAGER, cascade = CascadeType.ALL)

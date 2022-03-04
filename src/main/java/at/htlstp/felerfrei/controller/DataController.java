@@ -5,6 +5,7 @@ import at.htlstp.felerfrei.domain.Project;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import at.htlstp.felerfrei.payload.request.AddTooCartRequest;
+import at.htlstp.felerfrei.payload.response.CartResponse;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
@@ -150,5 +151,20 @@ public class DataController {
         }
 
         return ResponseEntity.ok(new MessageResponse("okay"));
+    }
+
+    @GetMapping("/cart")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<CartResponse> cart() {
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+
+        var cart = orderRepository.findCartByUser(inDatabase);
+        if (cart.isEmpty()) {
+            return ResponseEntity.ok(CartResponse.empty());
+        } else {
+            var optionalCart = cart.get();
+            return ResponseEntity.ok(new CartResponse(optionalCart, optionalCart.calculateTotalPrice(), optionalCart.getOrderContents().size()));
+        }
     }
 }
