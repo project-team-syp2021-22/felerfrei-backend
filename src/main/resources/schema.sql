@@ -49,7 +49,8 @@ create table Product
     name        varchar(254) not null,
     description varchar(1024),
     isPublished bool,
-    price       float
+    price       float,
+    material varchar(256)
 );
 create table "order"
 (
