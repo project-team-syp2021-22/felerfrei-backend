@@ -11,9 +11,10 @@ public class CartResponse {
     private Order order;
     private double totalPrice;
     private int totalItems;
+    private boolean isEmpty = false;
 
 
     public static CartResponse empty() {
-        return new CartResponse(null, 0, 0);
+        return new CartResponse(null, 0, 0, true);
     }
 }

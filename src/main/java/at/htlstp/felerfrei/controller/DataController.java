@@ -164,7 +164,7 @@ public class DataController {
             return ResponseEntity.ok(CartResponse.empty());
         } else {
             var optionalCart = cart.get();
-            return ResponseEntity.ok(new CartResponse(optionalCart, optionalCart.calculateTotalPrice(), optionalCart.getOrderContents().size()));
+            return ResponseEntity.ok(new CartResponse(optionalCart, optionalCart.calculateTotalPrice(), optionalCart.getOrderContents().size(), false));
         }
     }
 }
