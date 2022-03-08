@@ -92,3 +92,21 @@ create table Order_Product
     constraint FK_Order_Product_Order_id foreign key (Order_id) references "order" (id)
 );
 
+create or replace function delete_if_amount_zero()
+    returns trigger as
+$$
+begin
+    if (new.amount <= 0) then
+        delete from order_product as o where o.order_product_id = new.order_product_id;
+    end if;
+    raise notice 'amount: %', new.amount;
+    return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trigger_amount_order_product on order_product;
+
+create trigger trigger_amount_order_product
+    after update or insert
+    on order_product
+    EXECUTE procedure delete_if_amount_zero();

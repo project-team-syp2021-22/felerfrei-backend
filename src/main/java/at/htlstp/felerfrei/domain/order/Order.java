@@ -35,7 +35,7 @@ public class Order {
     @JsonIgnore
     private User user;
 
-    @OneToMany(mappedBy="order", fetch=FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<OrderContent> orderContents;
 
     @Override
@@ -60,11 +60,11 @@ public class Order {
     }
 
     public void addOrderContent(@NonNull OrderContent content) {
-        if(this.orderContents== null) {
+        if (this.orderContents == null) {
             this.orderContents = new ArrayList<>();
         }
-        for(var orderContent : orderContents) {
-            if(equalOrderContent(orderContent, content)) {
+        for (var orderContent : orderContents) {
+            if (equalOrderContent(orderContent, content)) {
                 orderContent.setAmount(orderContent.getAmount() + 1);
                 return;
             }
@@ -75,18 +75,30 @@ public class Order {
     }
 
     private boolean equalOrderContent(@NonNull OrderContent content1, @NonNull OrderContent content2) {
-        if(!content1.getProduct().equals(content2.getProduct()))
+        if (!content1.getProduct().equals(content2.getProduct()))
             return false;
-        if(content1.getExtrawurscht() == null && content2.getExtrawurscht() == null)
+        if (content1.getExtrawurscht() == null && content2.getExtrawurscht() == null)
             return true;
-        if(content1.getExtrawurscht() == null || content2.getExtrawurscht() == null)
+        if (content1.getExtrawurscht() == null || content2.getExtrawurscht() == null)
             return false;
         return content1.getExtrawurscht().equals(content2.getExtrawurscht());
     }
 
     public void setOrderContent(List<OrderContent> orderContents) {
-        for(var c : orderContents) {
+        for (var c : orderContents) {
             addOrderContent(c);
+        }
+    }
+
+    public void removeOrderContent(int id, int amount) {
+        for (var orderContent : orderContents) {
+            if (orderContent.getId() == id) {
+                orderContent.setAmount(orderContent.getAmount() - amount);
+                if (orderContent.getAmount() <= 0) {
+                    orderContents.remove(orderContent);
+                }
+                break;
+            }
         }
     }
 

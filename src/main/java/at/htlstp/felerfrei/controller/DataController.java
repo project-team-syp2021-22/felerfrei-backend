@@ -5,6 +5,7 @@ import at.htlstp.felerfrei.domain.Project;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import at.htlstp.felerfrei.payload.request.AddTooCartRequest;
+import at.htlstp.felerfrei.payload.request.RemoveFromCartRequest;
 import at.htlstp.felerfrei.payload.response.CartResponse;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.OrderRepository;
@@ -14,6 +15,7 @@ import at.htlstp.felerfrei.persistence.UserRepository;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
 import at.htlstp.felerfrei.services.FileService;
 import at.htlstp.felerfrei.services.pdf.PDFOrderConfirmationService;
+import org.apache.coyote.Response;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -127,7 +129,7 @@ public class DataController {
         }
     }
 
-    @PostMapping("/addTooCart")
+    @PutMapping("/addTooCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<MessageResponse> addTooCart(@RequestBody AddTooCartRequest request) {
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -164,7 +166,39 @@ public class DataController {
             return ResponseEntity.ok(CartResponse.empty());
         } else {
             var optionalCart = cart.get();
-            return ResponseEntity.ok(new CartResponse(optionalCart, optionalCart.calculateTotalPrice(), optionalCart.getOrderContents().size(), false));
+            return ResponseEntity.ok(new CartResponse(optionalCart, optionalCart.calculateTotalPrice(),
+                    optionalCart.getOrderContents().size(), optionalCart.getOrderContents().isEmpty()));
         }
+    }
+
+    @PutMapping("/deleteFromCart")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<Void> removeFromCart(@RequestBody RemoveFromCartRequest request) {
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+
+        var cart = orderRepository.findCartByUser(inDatabase);
+        if (cart.isPresent()) {
+            var optionalCart = cart.get();
+            optionalCart.removeOrderContent(request.getOrderContentId(), request.getAmount());
+            System.out.println(optionalCart.getOrderContents());
+            orderRepository.save(optionalCart);
+        }
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/clearCart")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<MessageResponse> clearCart() {
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+
+        var cart = orderRepository.findCartByUser(inDatabase);
+        if (cart.isEmpty()) {
+            return ResponseEntity.ok(new MessageResponse("okay"));
+        }
+        var optionalCart = cart.get();
+        orderRepository.delete(optionalCart);
+        return ResponseEntity.ok(new MessageResponse("okay"));
     }
 }
