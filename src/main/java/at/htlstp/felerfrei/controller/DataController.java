@@ -93,7 +93,6 @@ public class DataController {
 
     @GetMapping("/projects")
     public Page<Project> getProjects(Pageable pageable) {
-        System.out.println(projectRepository.findAll());
         return projectRepository.findAllByPublished(true, pageable);
     }
 
@@ -145,7 +144,6 @@ public class DataController {
             orderRepository.save(order);
         } else {
             var optionalCart = cart.get();
-            System.out.println(optionalCart.getId());
             cart.get().addOrderContent(new OrderContent(null, request.getAmount(), request.getExtra(), product.getPrice(), cart.get(), product));
             orderRepository.save(cart.get());
         }
@@ -182,7 +180,6 @@ public class DataController {
         if (cart.isPresent()) {
             var optionalCart = cart.get();
             optionalCart.removeOrderContent(request.getOrderContentId(), request.getAmount());
-            System.out.println(optionalCart.getOrderContents());
             orderRepository.save(optionalCart);
             orderRepository.deleteEmptyContent();
         }

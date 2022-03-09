@@ -69,7 +69,6 @@ public class Order {
                 return;
             }
         }
-
         content.setOrder(this);
         this.orderContents.add(content);
     }
@@ -95,7 +94,9 @@ public class Order {
             if (orderContent.getId() == id) {
                 orderContent.setAmount(orderContent.getAmount() - amount);
                 if (orderContent.getAmount() <= 0) {
+                    orderContent.setAmount(1); // necessary to prevent a constraint violation in the database
                     orderContents.remove(orderContent);
+                    orderContent.removeFromOrder();
                 }
                 break;
             }

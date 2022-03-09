@@ -39,6 +39,10 @@ public class OrderContent {
     @JoinColumn(name = "product_id")
     private Product product;
 
+    public void removeFromOrder() {
+        this.order = null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

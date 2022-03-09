@@ -49,7 +49,7 @@ create table Product
     name        varchar(254) not null,
     description varchar(1024),
     isPublished bool,
-    price       float,
+    price       float check ( price > 0 ),
     material varchar(256)
 );
 create table "order"
@@ -85,28 +85,10 @@ create table Order_Product
     Order_Product_id serial primary key,
     Order_id         int,
     Product_id       int,
-    amount           int,
+    amount           int check (amount > 0),
     retail_price     float,
     Extrawurscht     varchar(1024),
     constraint FK_Order_Product_Product_id foreign key (Product_id) references Product (id),
     constraint FK_Order_Product_Order_id foreign key (Order_id) references "order" (id)
 );
 
-create or replace function delete_if_amount_zero()
-    returns trigger as
-$$
-begin
-    if (new.amount <= 0) then
-        delete from order_product as o where o.order_product_id = new.order_product_id;
-    end if;
-    raise notice 'amount: %', new.amount;
-    return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists trigger_amount_order_product on order_product;
-
-create trigger trigger_amount_order_product
-    after update or insert
-    on order_product
-    EXECUTE procedure delete_if_amount_zero();
