@@ -26,4 +26,12 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Transactional
     @Query("delete from order_product o where o.amount <= 0")
     void deleteEmptyContent();
+
+    @Query("select o from order_product o where o.id = ?1")
+    Optional<OrderContent> findOrderContentById(Integer id);
+
+    @Modifying
+    @Transactional
+    @Query("delete from order_product o where o.id = ?1")
+    void deleteOrderContentById(Integer id);
 }

@@ -6,6 +6,7 @@ import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import at.htlstp.felerfrei.payload.request.AddTooCartRequest;
 import at.htlstp.felerfrei.payload.request.RemoveFromCartRequest;
+import at.htlstp.felerfrei.payload.request.SetProductInCartRequest;
 import at.htlstp.felerfrei.payload.response.CartResponse;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.OrderRepository;
@@ -167,6 +168,31 @@ public class DataController {
         }
     }
 
+    @PutMapping("/setProductInCart")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<MessageResponse> setProductInCart(@RequestBody SetProductInCartRequest request) {
+        if(request.getAmount() < 1) {
+            throw new IllegalArgumentException("amount must be greater than 0");
+        }
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+
+        var cart = orderRepository.findCartByUser(inDatabase);
+        if (cart.isEmpty()) {
+             return ResponseEntity.ok(new MessageResponse("no cart"));
+        }
+        var optionalCart = cart.get();
+
+        var orderContent = orderRepository.findOrderContentById(request.getOrderContentId());
+        if(orderContent.isEmpty()) {
+            throw new IllegalArgumentException("order content not found");
+        }
+
+        orderContent.get().setAmount(request.getAmount());
+        orderRepository.save(optionalCart);
+        return ResponseEntity.ok(new MessageResponse(String.valueOf(request.getAmount())));
+    }
+
     @PutMapping("/deleteFromCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Void> removeFromCart(@RequestBody RemoveFromCartRequest request) {
@@ -181,7 +207,7 @@ public class DataController {
             var optionalCart = cart.get();
             optionalCart.removeOrderContent(request.getOrderContentId(), request.getAmount());
             orderRepository.save(optionalCart);
-            orderRepository.deleteEmptyContent();
+            orderRepository.deleteOrderContentById(request.getOrderContentId());
         }
         return ResponseEntity.ok().build();
     }
