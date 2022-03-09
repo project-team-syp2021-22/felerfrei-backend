@@ -15,9 +15,7 @@ import at.htlstp.felerfrei.persistence.UserRepository;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
 import at.htlstp.felerfrei.services.FileService;
 import at.htlstp.felerfrei.services.pdf.PDFOrderConfirmationService;
-import org.apache.coyote.Response;
 import org.springframework.core.io.Resource;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -174,6 +172,9 @@ public class DataController {
     @PutMapping("/deleteFromCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Void> removeFromCart(@RequestBody RemoveFromCartRequest request) {
+        if(request.getAmount() <= 0) {
+            throw new IllegalArgumentException("amount must be greater than 0");
+        }
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
 
@@ -183,6 +184,7 @@ public class DataController {
             optionalCart.removeOrderContent(request.getOrderContentId(), request.getAmount());
             System.out.println(optionalCart.getOrderContents());
             orderRepository.save(optionalCart);
+            orderRepository.deleteEmptyContent();
         }
         return ResponseEntity.ok().build();
     }
