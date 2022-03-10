@@ -187,6 +187,9 @@ public class DataController {
         if(orderContent.isEmpty()) {
             throw new IllegalArgumentException("order content not found");
         }
+        if(orderContent.get().getOrder().getUser().getId() != inDatabase.getId()) {
+            throw new IllegalArgumentException("you can't change other users order");
+        }
 
         orderContent.get().setAmount(request.getAmount());
         orderRepository.save(optionalCart);
