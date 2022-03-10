@@ -144,7 +144,6 @@ public class DataController {
             order.setOrderContent(List.of(new OrderContent(null, 1, "test", product.getPrice(), order, product)));
             orderRepository.save(order);
         } else {
-            var optionalCart = cart.get();
             cart.get().addOrderContent(new OrderContent(null, request.getAmount(), request.getExtra(), product.getPrice(), cart.get(), product));
             orderRepository.save(cart.get());
         }
@@ -171,8 +170,8 @@ public class DataController {
     @PutMapping("/setProductInCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<MessageResponse> setProductInCart(@RequestBody SetProductInCartRequest request) {
-        if(request.getAmount() < 1) {
-            throw new IllegalArgumentException("amount must be greater than 0");
+        if(request.getAmount() < 1 || request.getAmount() > OrderContent.MAX_AMOUNT) {
+            throw new IllegalArgumentException("amount must be a valid number");
         }
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
