@@ -11,9 +11,9 @@ import at.htlstp.felerfrei.persistence.UserRepository;
 import at.htlstp.felerfrei.persistence.VerificationTokenRepository;
 import at.htlstp.felerfrei.security.jwt.JwtUtils;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
-import lombok.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,7 +23,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.mail.Message;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
@@ -200,5 +199,13 @@ public class AuthController {
             return false;
         }
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+    }
+
+    @GetMapping("/isAdmin")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Boolean> roleCheck() {
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+        return ResponseEntity.ok(inDatabase.getRole().getName() == RoleAuthority.ROLE_ADMIN);
     }
 }
