@@ -65,6 +65,9 @@ public class Order {
         }
         for (var orderContent : orderContents) {
             if (equalOrderContent(orderContent, content)) {
+                if (orderContent.getAmount() == OrderContent.MAX_AMOUNT) {
+                    return;
+                }
                 orderContent.setAmount(orderContent.getAmount() + 1);
                 return;
             }
