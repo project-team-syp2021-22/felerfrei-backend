@@ -1,9 +1,6 @@
 package at.htlstp.felerfrei.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -42,6 +39,7 @@ public class Product implements Showable {
             joinColumns=@JoinColumn(name="product_id"),
             inverseJoinColumns=@JoinColumn(name="image_id")
     )
+    @Setter
     private List<Image> images;
 
     @Override

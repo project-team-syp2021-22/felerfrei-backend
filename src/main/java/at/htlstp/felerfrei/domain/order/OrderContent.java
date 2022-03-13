@@ -43,7 +43,7 @@ public class OrderContent {
         this.order = null;
     }
 
-    public static int MAX_AMOUNT = 10;
+    public static final int MAX_AMOUNT = 10;
 
     @Override
     public boolean equals(Object o) {

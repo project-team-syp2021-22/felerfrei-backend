@@ -11,4 +11,5 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     Page<Product> findAllByPublished(boolean published, Pageable pageable);
 
+    Page<Product> findAllByOrderById(Pageable pageable);
 }
