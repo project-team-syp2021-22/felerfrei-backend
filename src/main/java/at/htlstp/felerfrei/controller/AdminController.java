@@ -1,17 +1,17 @@
 package at.htlstp.felerfrei.controller;
 
-import at.htlstp.felerfrei.domain.Image;
 import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.payload.request.AddProductRequest;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.ImageRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
+import at.htlstp.felerfrei.services.FileService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -21,11 +21,11 @@ import java.util.List;
 public class AdminController {
 
     private final ProductRepository productRepository;
-    private final ImageRepository imageRepository;
+    private final FileService imageLocationService;
 
-    public AdminController(ProductRepository productRepository, ImageRepository imageRepository) {
+    public AdminController(ProductRepository productRepository, FileService imageLocationService) {
         this.productRepository = productRepository;
-        this.imageRepository = imageRepository;
+        this.imageLocationService = imageLocationService;
     }
 
     @GetMapping("/products")
@@ -42,5 +42,15 @@ public class AdminController {
                 addProductRequest.getPrice(), addProductRequest.getMaterial(), null);
         productRepository.save(product);
         return new MessageResponse("Product added");
+    }
+
+    // TODO: add parameter for product id
+    @PostMapping("/upload")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void upload(@RequestParam(value = "image") List<MultipartFile> files) {
+        String directory = "/img";
+        for (MultipartFile file : files) {
+            imageLocationService.save(file, directory);
+        }
     }
 }

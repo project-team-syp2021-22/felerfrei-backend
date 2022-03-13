@@ -118,15 +118,6 @@ public class DataController {
                 .body(image.get());
     }
 
-    // TODO: remove this before deployment
-    @PostMapping("/upload")
-    public void upload(@RequestParam(value = "image") List<MultipartFile> files) {
-        String directory = "/img";
-        for (MultipartFile file : files) {
-            imageLocationService.save(file, directory);
-        }
-    }
-
     @PutMapping("/addTooCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<MessageResponse> addTooCart(@RequestBody AddTooCartRequest request) {
