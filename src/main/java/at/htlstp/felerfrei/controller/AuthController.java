@@ -89,7 +89,7 @@ public class AuthController {
                     .badRequest()
                     .body(new MessageResponse("Error: Email is already in use!"));
         }
-        if (!passwordIsValid(signUpRequest.getPassword())) {
+        if (passwordIsNotValid(signUpRequest.getPassword())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
@@ -109,7 +109,7 @@ public class AuthController {
         var token = UUID.randomUUID().toString();
         var savedToken = verificationTokenRepository.save(new VerificationToken(token, saved));
 
-        new Thread(() -> mailSender.sendVerificationEmail(savedToken, "http://localhost:3000/verify/")).start();
+        mailSender.sendVerificationEmail(savedToken, "http://localhost:3000/verify/");
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
@@ -179,7 +179,7 @@ public class AuthController {
             if (LocalDateTime.now().isAfter(verificationToken.getExpiryDate())) {
                 return ResponseEntity.badRequest().body(new MessageResponse("Verification token expired!"));
             }
-            if (!passwordIsValid(request.getNewPassword())) {
+            if (passwordIsNotValid(request.getNewPassword())) {
                 return ResponseEntity
                         .status(HttpStatus.CONFLICT)
                         .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
@@ -194,11 +194,11 @@ public class AuthController {
         }
     }
 
-    private boolean passwordIsValid(String password) {
+    private boolean passwordIsNotValid(String password) {
         if (password == null) {
-            return false;
+            return true;
         }
-        return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
+        return !password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$");
     }
 
     @GetMapping("/isAdmin")

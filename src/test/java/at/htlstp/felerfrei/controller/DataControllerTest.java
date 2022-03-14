@@ -4,6 +4,7 @@ import at.htlstp.felerfrei.FelerfreibackendApplication;
 import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.persistence.ProductRepository;
 import org.json.JSONObject;
+import org.junit.Before;
 import org.junit.jupiter.api.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +38,16 @@ public class DataControllerTest {
         productRepository.save(new Product(null, "Bett", "", false, 43.99, null, null));
     }
 
+    @AfterEach
+    public void teardown() {
+        productRepository.deleteAll();
+    }
+
     @Nested
     class ProductTest {
 
         @Test
-        public void pageable_products() throws Exception {
+        void pageable_products() throws Exception {
             var result = mvc.perform(get("/api/products").param("size", "1"))
                     .andDo(print())
                     .andReturn();
@@ -51,17 +57,17 @@ public class DataControllerTest {
         }
 
         @Test
-        public void only_contains_publisched_products() throws Exception {
+        void only_contains_publisched_products() throws Exception {
             var result = mvc.perform(get("/api/products?size=4"))
                     .andDo(print())
                     .andReturn();
             var jsonObject = new JSONObject(result.getResponse().getContentAsString());
             var content = jsonObject.getJSONArray("content");
-            assert content.length() == 3;
+            assertEquals(3, content.length());
         }
 
         @Test
-        public void multiple_pages_products() throws Exception {
+        void multiple_pages_products() throws Exception {
             var result = mvc.perform(get("/api/products?size=2&page=1"))
                     .andDo(print())
                     .andReturn();
