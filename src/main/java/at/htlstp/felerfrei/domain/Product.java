@@ -12,6 +12,7 @@ import java.util.Objects;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@Setter
 public class Product implements Showable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -39,7 +40,6 @@ public class Product implements Showable {
             joinColumns=@JoinColumn(name="product_id"),
             inverseJoinColumns=@JoinColumn(name="image_id")
     )
-    @Setter
     private List<Image> images;
 
     @Override

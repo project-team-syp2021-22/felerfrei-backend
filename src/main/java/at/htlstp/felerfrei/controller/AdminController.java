@@ -44,7 +44,18 @@ public class AdminController {
         return ResponseEntity.ok(saved.getId());
     }
 
-    // TODO: add parameter for product id
+    @PutMapping("/updateProduct/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Integer> updateProduct(@PathVariable("id") Integer id, @RequestBody AddProductRequest addProductRequest) {
+        var product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        product.setName(addProductRequest.getName());
+        product.setDescription(addProductRequest.getDescription());
+        product.setPrice(addProductRequest.getPrice());
+        product.setMaterial(addProductRequest.getMaterial());
+        productRepository.save(product);
+        return ResponseEntity.ok(product.getId());
+    }
+
     @PostMapping("/uploadImage/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void upload(@RequestParam(value = "images") List<MultipartFile> files, @PathVariable Integer productId) {
