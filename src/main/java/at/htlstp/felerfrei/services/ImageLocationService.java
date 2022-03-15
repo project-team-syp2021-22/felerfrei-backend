@@ -59,4 +59,9 @@ public class ImageLocationService implements FileService {
         }
         return imageService.getImage(found.get().getPath());
     }
+
+    @Override
+    public Optional<Image> getImage(int id) {
+        return repository.findById(id);
+    }
 }
