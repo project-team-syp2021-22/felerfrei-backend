@@ -70,4 +70,9 @@ public class Project implements Showable {
             addImage(image);
         }
     }
+
+    @Override
+    public void removeImage(int id) {
+        images.removeIf(image -> image.getId() == id);
+    }
 }

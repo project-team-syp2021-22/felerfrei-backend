@@ -62,6 +62,11 @@ public class Product implements Showable {
     }
 
     @Override
+    public void removeImage(int id) {
+        images.removeIf(image -> image.getId() == id);
+    }
+
+    @Override
     public void addImage(@NonNull Image image) {
         if(this.images == null) {
             this.images = new ArrayList<>();

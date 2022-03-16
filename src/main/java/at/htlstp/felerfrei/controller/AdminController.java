@@ -56,6 +56,18 @@ public class AdminController {
         return ResponseEntity.ok(product.getId());
     }
 
+    @DeleteMapping("/deleteImage/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void deleteImage(@PathVariable("id") Integer id) {
+        var product = productRepository.findProductByImage(id);
+        if(product.isEmpty())
+            throw new IllegalArgumentException("Product not found");
+        product.get().removeImage(id);
+        productRepository.save(product.get());
+        imageLocationService.delete(id);
+        productRepository.save(product.get());
+    }
+
     @PostMapping("/uploadImage/{productId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void upload(@RequestParam(value = "images") List<MultipartFile> files, @PathVariable Integer productId) {
