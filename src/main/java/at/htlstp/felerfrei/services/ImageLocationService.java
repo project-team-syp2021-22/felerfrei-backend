@@ -64,4 +64,14 @@ public class ImageLocationService implements FileService {
     public Optional<Image> getImage(int id) {
         return repository.findById(id);
     }
+
+    @Override
+    public void deleteIfNotUsed(int id) {
+        var found = repository.findById(id);
+        if(found.isEmpty()) {
+            return;
+        }
+        if(repository.imageStillInUse(found.get())) return;
+        delete(id);
+    }
 }
