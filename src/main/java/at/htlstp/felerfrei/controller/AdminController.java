@@ -73,4 +73,19 @@ public class AdminController {
         }
         productRepository.save(product);
     }
+
+    /**
+     * Removes an image from a product. If an image is removed from a product, the image is not deleted from the file system.
+     * However, if the image is not used by any other product, it will be deleted from the file system.
+     * @param productId id of the product where the image should be deleted
+     * @param imageId id of the image that should be deleted
+     */
+    @PostMapping("/removeImage/{productId}/{imageId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public void removeImage(@PathVariable Integer productId, @PathVariable Integer imageId) {
+        var product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+        product.removeImage(imageId);
+        productRepository.save(product);
+        imageLocationService.deleteIfNotUsed(imageId);
+    }
 }

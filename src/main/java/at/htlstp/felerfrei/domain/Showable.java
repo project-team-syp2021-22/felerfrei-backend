@@ -8,4 +8,6 @@ public interface Showable {
 
     void addAllImages(List<Image> images);
 
+    void removeImage(int id);
+
 }

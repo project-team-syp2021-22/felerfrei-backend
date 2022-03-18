@@ -16,4 +16,6 @@ public interface FileService {
 
     Optional<Image> getImage(int id);
 
+    void deleteIfNotUsed(int id);
+
 }
