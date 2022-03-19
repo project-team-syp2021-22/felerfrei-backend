@@ -87,13 +87,26 @@ public class AuthController {
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+                    .body(new MessageResponse("Email wird bereits verwendet"));
         }
         if (passwordIsNotValid(signUpRequest.getPassword())) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
                     .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
         }
+
+        if(!signUpRequest.getFirstname().matches("\\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+")){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Vorname ist ungültig"));
+        }
+        if(!signUpRequest.getLastname().matches("\\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+")){
+            return ResponseEntity
+                    .badRequest()
+                    .body(new MessageResponse("Nachname ist ungültig"));
+        }
+
+
         User user;
         try {
             user = new User(signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getEmail(),
