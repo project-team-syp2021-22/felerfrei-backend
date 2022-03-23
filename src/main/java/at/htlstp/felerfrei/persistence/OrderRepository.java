@@ -41,5 +41,6 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             where (select content from order_product content where content.product.id = ?1 and content.order = o) member of o.orderContents
             and o.ordered = false
             """)
+    @Transactional
     List<Order> findAllByNotOrderedOrderContainingProduct(Integer productId);
 }
