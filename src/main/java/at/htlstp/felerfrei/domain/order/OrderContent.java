@@ -27,6 +27,7 @@ public class OrderContent {
     private String extrawurscht;
 
     @Column(name = "retail_price")
+    @Setter
     private Double retailPrice;
 
     @ManyToOne(targetEntity = Order.class)
