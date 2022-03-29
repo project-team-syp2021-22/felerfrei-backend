@@ -38,6 +38,12 @@ public class AdminController {
         return productRepository.findAllByOrderById(pageable);
     }
 
+    @GetMapping("/products/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public Product getProduct(@PathVariable("id") Integer id) {
+        return productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product not found"));
+    }
+
     @PostMapping("/addProduct")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Integer> addProduct(@RequestBody AddProductRequest addProductRequest) {
