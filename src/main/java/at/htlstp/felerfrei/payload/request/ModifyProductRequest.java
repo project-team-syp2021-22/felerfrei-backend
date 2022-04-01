@@ -1,12 +1,14 @@
 package at.htlstp.felerfrei.payload.request;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 
 @AllArgsConstructor
-@Getter
-public class AddProductRequest {
+@Data
+@NoArgsConstructor
+public class ModifyProductRequest {
     @NonNull
     private String name;
     @NonNull
@@ -14,4 +16,6 @@ public class AddProductRequest {
     private double price;
     @NonNull
     private String material;
+
+    private boolean published;
 }

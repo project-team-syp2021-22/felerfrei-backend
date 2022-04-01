@@ -1,7 +1,7 @@
 package at.htlstp.felerfrei.controller;
 
 import at.htlstp.felerfrei.domain.Product;
-import at.htlstp.felerfrei.payload.request.AddProductRequest;
+import at.htlstp.felerfrei.payload.request.ModifyProductRequest;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
 import at.htlstp.felerfrei.services.FileService;
@@ -46,7 +46,7 @@ public class AdminController {
 
     @PostMapping("/addProduct")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Integer> addProduct(@RequestBody AddProductRequest addProductRequest) {
+    public ResponseEntity<Integer> addProduct(@RequestBody ModifyProductRequest addProductRequest) {
         var product = new Product(null, addProductRequest.getName(),
                 addProductRequest.getDescription(), false,
                 addProductRequest.getPrice(), addProductRequest.getMaterial(), null);
@@ -56,12 +56,13 @@ public class AdminController {
 
     @PutMapping("/updateProduct/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Integer> updateProduct(@PathVariable("id") Integer id, @RequestBody AddProductRequest addProductRequest) {
+    public ResponseEntity<Integer> updateProduct(@PathVariable("id") Integer id, @RequestBody ModifyProductRequest addProductRequest) {
         var product = productRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Product not found"));
         product.setName(addProductRequest.getName());
         product.setDescription(addProductRequest.getDescription());
         product.setPrice(addProductRequest.getPrice());
         product.setMaterial(addProductRequest.getMaterial());
+        product.setPublished(addProductRequest.isPublished());
         productRepository.save(product);
 
         var orders = orderRepository.findAllByNotOrderedOrderContainingProduct(product.getId());
