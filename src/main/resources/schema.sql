@@ -58,6 +58,10 @@ create table "order"
     orderdate     date not null,
     isOrdered     bool not null,
     order_address varchar(1024),
+    street varchar(100),
+    streetnumber varchar(25),
+    zipcode varchar(25),
+    city varchar(100),
     user_id       int,
     constraint FK_Order_User foreign key (user_id) references "user" (id)
 );

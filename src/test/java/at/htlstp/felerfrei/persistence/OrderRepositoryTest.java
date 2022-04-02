@@ -57,7 +57,7 @@ class OrderRepositoryTest {
         var role = roleRepository.save(new Role(null, RoleAuthority.ROLE_USER));
         var user = userRepository.save(new User(null, "Florian", "Hugo", "f.kainrath@hugo.com", "", true, null, role));
         var product = productRepository.save(new Product(null, "Sessel", "", true, 23D,null, null));
-        var order = new Order(1, LocalDate.now(), true, "test", user, null);
+        var order = new Order(1, LocalDate.now(), true, null,null,null,null, user, null);
         var inhalt = List.of(
                 new OrderContent(1, 2, null, 24.99, order, product),
                 new OrderContent(2, 1, "Mit Schriftzug", 24.99, order, product)
