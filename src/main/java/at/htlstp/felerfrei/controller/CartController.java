@@ -51,7 +51,7 @@ public class CartController {
         var cart = orderRepository.findCartByUser(inDatabase);
         if (cart.isEmpty()) {
             var order = new Order(null, LocalDate.now(), false, null, inDatabase, null);
-            order.setOrderContent(List.of(new OrderContent(null, 1, "test", product.getPrice(), order, product)));
+            order.setOrderContent(List.of(new OrderContent(null, 1, request.getExtra(), product.getPrice(), order, product)));
             orderRepository.save(order);
         } else {
             cart.get().addOrderContent(new OrderContent(null, request.getAmount(), request.getExtra(), product.getPrice(), cart.get(), product));
@@ -90,8 +90,6 @@ public class CartController {
         if (cart.isEmpty()) {
             return ResponseEntity.ok(new MessageResponse("no cart"));
         }
-        var optionalCart = cart.get();
-
         var orderContent = orderRepository.findOrderContentById(request.getOrderContentId());
         if(orderContent.isEmpty()) {
             throw new IllegalArgumentException("order content not found");
@@ -100,8 +98,9 @@ public class CartController {
             throw new IllegalArgumentException("you can't change other users order");
         }
 
-        orderContent.get().setAmount(request.getAmount());
-        orderRepository.save(optionalCart);
+        orderRepository.setOrderContentAmount(request.getOrderContentId(), request.getAmount());
+//        orderContent.get().setAmount(request.getAmount());
+//        orderRepository.save(optionalCart);
         return ResponseEntity.ok(new MessageResponse(String.valueOf(request.getAmount())));
     }
 
@@ -116,10 +115,7 @@ public class CartController {
 
         var cart = orderRepository.findCartByUser(inDatabase);
         if (cart.isPresent()) {
-            var optionalCart = cart.get();
-            optionalCart.removeOrderContent(request.getOrderContentId(), request.getAmount());
-            orderRepository.save(optionalCart);
-            orderRepository.deleteOrderContentById(request.getOrderContentId());
+            orderRepository.removeProductFromCart(request.getOrderContentId(), request.getAmount());
         }
         return ResponseEntity.ok().build();
     }

@@ -19,7 +19,7 @@ public class Product implements Showable {
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "name", nullable = false, length = 254)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
     @Column(name = "description", length = 1024)
@@ -31,7 +31,7 @@ public class Product implements Showable {
     @Column(name = "price")
     private Double price;
 
-    @Column(name="material")
+    @Column(name="material", length = 255)
     private String material;
 
     @ManyToMany(cascade = CascadeType.ALL)

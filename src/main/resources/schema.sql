@@ -50,7 +50,7 @@ create table Product
     description varchar(1024),
     isPublished bool,
     price       float check ( price > 0 ),
-    material varchar(256)
+    material    varchar(256)
 );
 create table "order"
 (
@@ -92,3 +92,50 @@ create table Order_Product
     constraint FK_Order_Product_Order_id foreign key (Order_id) references "order" (id)
 );
 
+create or replace function remove_product_from_cart(in order_content_id int, in delAmount int)
+    returns boolean
+as
+$$
+begin
+    if (select amount - delAmount from Order_Product where Order_Product_id = order_content_id) <= 0 then
+        delete from Order_Product where Order_Product_id = order_content_id;
+        return true;
+    end if;
+    update Order_Product set amount = amount - delAmount where Order_Product_id = order_content_id;
+    return false;
+end;
+$$
+    language plpgsql;
+
+create or replace function set_order_content_amount(in order_content_id int, in newAmount int)
+    returns boolean
+as
+$$
+begin
+    if (select o.amount from Order_Product o where o.Order_Product_id = order_content_id) <> newAmount then
+        update Order_Product set amount = newAmount where Order_Product_id = order_content_id;
+        return true;
+    end if;
+end;
+$$
+    language plpgsql;
+
+create or replace function update_product(in productId int, in newName varchar(255), in newDescription varchar(1024),
+                                          in newPrice float, in newIsPublished bool, in newMaterial varchar(255))
+    returns boolean
+as
+$$
+begin
+    update product
+    set name        = newName,
+        description = newDescription,
+        price       = newPrice,
+        material    = newMaterial,
+        isPublished = newIsPublished
+    where id = productId;
+    update Order_Product set retail_price = newPrice where Product_id = productId
+    and (select isOrdered from "order" where id = Order_id) = false;
+    return true;
+end;
+$$
+    language plpgsql;

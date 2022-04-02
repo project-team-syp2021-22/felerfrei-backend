@@ -6,6 +6,7 @@ import at.htlstp.felerfrei.domain.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -43,4 +44,11 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
             """)
     @Transactional
     List<Order> findAllByNotOrderedOrderContainingProduct(Integer productId);
+
+    @Query(value = "select remove_product_from_cart(?1, ?2)", nativeQuery = true)
+    @Transactional
+    boolean removeProductFromCart(Integer order_content_id, Integer delAmount);
+
+    @Query(value="select set_order_content_amount(?1, ?2);", nativeQuery = true)
+    boolean setOrderContentAmount(int orderContentId, int amount);
 }

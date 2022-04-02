@@ -63,19 +63,18 @@ public class AdminController {
         product.setPrice(addProductRequest.getPrice());
         product.setMaterial(addProductRequest.getMaterial());
         product.setPublished(addProductRequest.isPublished());
-        productRepository.save(product);
+        productRepository.update(product);
 
-        var orders = orderRepository.findAllByNotOrderedOrderContainingProduct(product.getId());
-
-        for (var order : orders) {
-            for(var orderContent : order.getOrderContents()) {
-                if(Objects.equals(orderContent.getProduct().getId(), product.getId())) {
-                    orderContent.setRetailPrice(product.getPrice());
-                }
-            }
-            orderRepository.save(order);
-        }
-
+//        var orders = orderRepository.findAllByNotOrderedOrderContainingProduct(product.getId());
+//
+//        for (var order : orders) {
+//            for(var orderContent : order.getOrderContents()) {
+//                if(Objects.equals(orderContent.getProduct().getId(), product.getId())) {
+//                    orderContent.setRetailPrice(product.getPrice());
+//                }
+//            }
+//            orderRepository.save(order);
+//        }
         return ResponseEntity.ok(product.getId());
     }
 
