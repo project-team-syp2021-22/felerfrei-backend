@@ -27,8 +27,17 @@ public class Order {
     @Column(name = "isordered", nullable = false)
     private Boolean ordered = false;
 
-    @Column(name = "order_address", length = 1024)
-    private String orderAddress;
+    @Column(name="street")
+    private String street;
+
+    @Column(name="streetnumber")
+    private String streetnumber;
+
+    @Column(name="zipcode")
+    private String zipcode;
+
+    @Column(name="city")
+    private String city;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -90,31 +99,5 @@ public class Order {
         for (var c : orderContents) {
             addOrderContent(c);
         }
-    }
-
-    public void removeOrderContent(int id, int amount) {
-        for (var orderContent : orderContents) {
-            if (orderContent.getId() == id) {
-                orderContent.setAmount(orderContent.getAmount() - amount);
-                if (orderContent.getAmount() <= 0) {
-                    orderContent.setAmount(1); // necessary to prevent a constraint violation in the database
-                    orderContents.remove(orderContent);
-                    orderContent.removeFromOrder();
-                }
-                break;
-            }
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "Order{" +
-                "id=" + id +
-                ", orderdate=" + orderdate +
-                ", ordered=" + ordered +
-                ", orderAddress='" + orderAddress + '\'' +
-                ", user=" + user +
-                ", orderContents=" + orderContents +
-                '}';
     }
 }

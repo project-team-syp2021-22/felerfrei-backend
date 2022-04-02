@@ -53,11 +53,15 @@ create table Product
 );
 create table "order"
 (
-    id        identity primary key,
-    orderdate date not null,
-    isOrdered   bit not null,
+    id            serial primary key,
+    orderdate     date not null,
+    isOrdered     bool not null,
     order_address varchar(1024),
-    user_id   int,
+    street varchar(100),
+    streetnumber varchar(25),
+    zipcode varchar(25),
+    city varchar(100),
+    user_id       int,
     constraint FK_Order_User foreign key (user_id) references "user" (id)
 );
 
@@ -90,4 +94,3 @@ create table Order_Product
     constraint FK_Order_Product_Product_id foreign key (Product_id) references Product (id),
     constraint FK_Order_Product_Order_id foreign key (Order_id) references "order" (id)
 );
-
