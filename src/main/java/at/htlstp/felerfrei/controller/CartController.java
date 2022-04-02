@@ -99,8 +99,6 @@ public class CartController {
         }
 
         orderRepository.setOrderContentAmount(request.getOrderContentId(), request.getAmount());
-//        orderContent.get().setAmount(request.getAmount());
-//        orderRepository.save(optionalCart);
         return ResponseEntity.ok(new MessageResponse(String.valueOf(request.getAmount())));
     }
 
