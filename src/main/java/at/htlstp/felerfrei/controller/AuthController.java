@@ -115,8 +115,8 @@ public class AuthController {
             throw new IllegalArgumentException("Password must be at least 8 characters long");
         }
 
-        var role = roleRepository.findByName(RoleAuthority.ROLE_USER);
-        user.setRole(role.orElseThrow(() -> new NoSuchElementException("Role not found")));
+        var role = roleRepository.findByName(RoleAuthority.ROLE_USER).orElseThrow(() -> new NoSuchElementException("Role not found"));
+        user.setRole(role);
 
         var saved = userRepository.save(user);
         var token = UUID.randomUUID().toString();
