@@ -143,3 +143,12 @@ begin
 end;
 $$
     language plpgsql;
+
+create or replace procedure order_cart(in cartId int)
+as
+$$
+begin
+    update "order" set isOrdered = true where id = cartId;
+end;
+$$
+    language plpgsql;

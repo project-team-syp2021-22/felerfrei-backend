@@ -15,15 +15,18 @@ import java.time.format.DateTimeFormatter;
 
 // please do not judge me, I hate myself for this code :)
 // https://www.mysamplecode.com/2012/10/generate-pdf-using-java-and-itext.html
-@Service("pdfWriter")
-public class PDFOrderConfirmationService {
+@Service("pdfConfirmationService")
+public class PDFOrderConfirmationService implements OrderConfirmationService{
 
     private static final String PRICE_FORMAT = "%.2f €";
+
+    public static final String PATH = "orderconfirmations/";
+
     private BaseFont bfBold;
     private BaseFont bf;
     private int pageNumber = 0;
 
-    public void writePDF(Order order) {
+    public void write(Order order) {
         createPDF(order);
     }
 
@@ -34,7 +37,7 @@ public class PDFOrderConfirmationService {
         initializeFonts();
 
         try {
-            String path = "orderconfirmations/" + order.getId() + ".pdf";
+            String path = PATH + order.getId() + ".pdf";
             docWriter = PdfWriter.getInstance(doc, new FileOutputStream(path));
             doc.addAuthor("felerfrei");
             doc.addCreationDate();

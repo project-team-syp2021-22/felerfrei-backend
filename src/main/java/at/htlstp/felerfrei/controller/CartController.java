@@ -11,6 +11,8 @@ import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
 import at.htlstp.felerfrei.persistence.UserRepository;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
+import at.htlstp.felerfrei.services.pdf.OrderConfirmationService;
+import at.htlstp.felerfrei.services.pdf.PDFOrderConfirmationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,10 +33,16 @@ public class CartController {
 
     private final ProductRepository productRepository;
 
-    public CartController(UserRepository userRepository, OrderRepository orderRepository, ProductRepository productRepository) {
+    private final OrderConfirmationService pdfConfirmationService;
+
+    private final MailSender mailSender;
+
+    public CartController(UserRepository userRepository, OrderRepository orderRepository, ProductRepository productRepository, OrderConfirmationService pdfConfirmationService, MailSender mailSender) {
         this.userRepository = userRepository;
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.pdfConfirmationService = pdfConfirmationService;
+        this.mailSender = mailSender;
     }
 
     @PutMapping("/addTooCart")
@@ -130,6 +138,26 @@ public class CartController {
         }
         var optionalCart = cart.get();
         orderRepository.delete(optionalCart);
+        return ResponseEntity.ok(new MessageResponse("okay"));
+    }
+
+    @PostMapping("/order")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<MessageResponse> orderCart() {
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+
+        var cart = orderRepository.findCartByUser(inDatabase).orElseThrow(() -> new IllegalArgumentException("no cart"));
+        if(cart.getOrderContents().isEmpty()) {
+            throw new IllegalArgumentException("cart is empty");
+        }
+
+        pdfConfirmationService.write(cart);
+
+        var path = String.format("%s/%s.pdf", PDFOrderConfirmationService.PATH, cart.getId());
+
+        mailSender.sendOrderConfirmation(inDatabase.getEmail(), cart.getId(), path);
+        orderRepository.orderCart(cart.getId());
         return ResponseEntity.ok(new MessageResponse("okay"));
     }
 }
