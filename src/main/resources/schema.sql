@@ -120,13 +120,13 @@ begin
         update Order_Product set amount = newAmount where Order_Product_id = order_content_id;
         return true;
     end if;
+    return false;
 end;
 $$
     language plpgsql;
 
-create or replace function update_product(in productId int, in newName varchar(255), in newDescription varchar(1024),
+create or replace procedure update_product(in productId int, in newName varchar(255), in newDescription varchar(1024),
                                           in newPrice float, in newIsPublished bool, in newMaterial varchar(255))
-    returns boolean
 as
 $$
 begin
@@ -139,7 +139,6 @@ begin
     where id = productId;
     update Order_Product set retail_price = newPrice where Product_id = productId
     and (select isOrdered from "order" where id = Order_id) = false;
-    return true;
 end;
 $$
     language plpgsql;
