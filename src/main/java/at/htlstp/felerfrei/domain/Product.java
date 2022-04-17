@@ -25,8 +25,8 @@ public class Product implements Showable {
     @Column(name = "description", length = 1024)
     private String description;
 
-    @Column(name = "ispublished")
-    private Boolean published;
+    @Column(name = "ispublished", nullable = false)
+    private boolean published;
 
     @Column(name = "price")
     private Double price;

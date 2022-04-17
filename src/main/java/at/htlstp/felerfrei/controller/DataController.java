@@ -62,7 +62,7 @@ public class DataController {
     @GetMapping("/product/{id}")
     public ResponseEntity<Product> getProduct(@PathVariable Integer id) {
         var found = productRepository.findById(id);
-        if (found.isEmpty() || !found.get().getPublished()) {
+        if (found.isEmpty() || !found.get().isPublished()) {
             throw new IllegalArgumentException("not found");
         }
         return found.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());

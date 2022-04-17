@@ -19,7 +19,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
     Page<Product> findAllByOrderById(Pageable pageable);
 
     default void update(@Param("product") Product product) {
-        update(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.getPublished(), product.getMaterial());
+        update(product.getId(), product.getName(), product.getDescription(), product.getPrice(), product.isPublished(), product.getMaterial());
     }
 
     @Query(value = "call update_product(:productId, :name, :description, :price, :published, :material);",

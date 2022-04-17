@@ -52,7 +52,7 @@ public class CartController {
         var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
 
         var product = productRepository.findById(request.getProductId()).orElseThrow(() -> new IllegalArgumentException("product not found"));
-        if (!product.getPublished()) {
+        if (!product.isPublished()) {
             throw new IllegalArgumentException("product not found");
         }
 
