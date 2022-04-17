@@ -48,7 +48,7 @@ create table Product
     id          serial primary key,
     name        varchar(254) not null,
     description varchar(1024),
-    isPublished bool not null default false,
+    isPublished bool         not null default false,
     price       float check ( price > 0 ),
     material    varchar(256)
 );
@@ -58,10 +58,10 @@ create table "order"
     orderdate     date not null,
     isOrdered     bool not null,
     order_address varchar(1024),
-    street varchar(100),
-    streetnumber varchar(25),
-    zipcode varchar(25),
-    city varchar(100),
+    street        varchar(100),
+    streetnumber  varchar(25),
+    zipcode       varchar(25),
+    city          varchar(100),
     user_id       int,
     constraint FK_Order_User foreign key (user_id) references "user" (id)
 );
@@ -126,7 +126,7 @@ $$
     language plpgsql;
 
 create or replace procedure update_product(in productId int, in newName varchar(255), in newDescription varchar(1024),
-                                          in newPrice float, in newIsPublished bool, in newMaterial varchar(255))
+                                           in newPrice float, in newIsPublished bool, in newMaterial varchar(255))
 as
 $$
 begin
@@ -137,8 +137,10 @@ begin
         material    = newMaterial,
         isPublished = newIsPublished
     where id = productId;
-    update Order_Product set retail_price = newPrice where Product_id = productId
-    and (select isOrdered from "order" where id = Order_id) = false;
+    update Order_Product
+    set retail_price = newPrice
+    where Product_id = productId
+      and (select isOrdered from "order" where id = Order_id) = false;
 end;
 $$
     language plpgsql;
@@ -148,6 +150,16 @@ as
 $$
 begin
     update "order" set isOrdered = true where id = cartId;
+end;
+$$
+    language plpgsql;
+
+create or replace procedure set_address_for_order(in _id int, in _zip varchar(255), in _city varchar(255),
+                                                  in _street varchar(255), in _streetnumber varchar(255))
+as
+$$
+begin
+    update "order" set zipcode = _zip, city = _city, street = _street, streetnumber = _streetnumber where id = _id;
 end;
 $$
     language plpgsql;

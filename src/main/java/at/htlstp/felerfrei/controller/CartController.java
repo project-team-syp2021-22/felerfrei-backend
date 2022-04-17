@@ -4,6 +4,7 @@ import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import at.htlstp.felerfrei.payload.request.AddTooCartRequest;
 import at.htlstp.felerfrei.payload.request.RemoveFromCartRequest;
+import at.htlstp.felerfrei.payload.request.SetAddressRequest;
 import at.htlstp.felerfrei.payload.request.SetProductInCartRequest;
 import at.htlstp.felerfrei.payload.response.CartResponse;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
@@ -58,7 +59,7 @@ public class CartController {
 
         var cart = orderRepository.findCartByUser(inDatabase);
         if (cart.isEmpty()) {
-            var order = new Order(null, LocalDate.now(), false, null,null,null,null, inDatabase, null);
+            var order = new Order(null, LocalDate.now(), false, null, null, null, null, inDatabase, null);
             order.setOrderContent(List.of(new OrderContent(null, 1, request.getExtra(), product.getPrice(), order, product)));
             orderRepository.save(order);
         } else {
@@ -88,7 +89,7 @@ public class CartController {
     @PutMapping("/setProductInCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<MessageResponse> setProductInCart(@RequestBody SetProductInCartRequest request) {
-        if(request.getAmount() < 1 || request.getAmount() > OrderContent.MAX_AMOUNT) {
+        if (request.getAmount() < 1 || request.getAmount() > OrderContent.MAX_AMOUNT) {
             throw new IllegalArgumentException("amount must be a valid number");
         }
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -99,10 +100,10 @@ public class CartController {
             return ResponseEntity.ok(new MessageResponse("no cart"));
         }
         var orderContent = orderRepository.findOrderContentById(request.getOrderContentId());
-        if(orderContent.isEmpty()) {
+        if (orderContent.isEmpty()) {
             throw new IllegalArgumentException("order content not found");
         }
-        if(!Objects.equals(orderContent.get().getOrder().getUser().getId(), inDatabase.getId())) {
+        if (!Objects.equals(orderContent.get().getOrder().getUser().getId(), inDatabase.getId())) {
             throw new IllegalArgumentException("you can't change other users order");
         }
 
@@ -113,7 +114,7 @@ public class CartController {
     @PutMapping("/deleteFromCart")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Void> removeFromCart(@RequestBody RemoveFromCartRequest request) {
-        if(request.getAmount() <= 0) {
+        if (request.getAmount() <= 0) {
             throw new IllegalArgumentException("amount must be greater than 0");
         }
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -146,9 +147,8 @@ public class CartController {
     public ResponseEntity<MessageResponse> orderCart() {
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
-
         var cart = orderRepository.findCartByUser(inDatabase).orElseThrow(() -> new IllegalArgumentException("no cart"));
-        if(cart.getOrderContents().isEmpty()) {
+        if (cart.getOrderContents().isEmpty()) {
             throw new IllegalArgumentException("cart is empty");
         }
 
@@ -157,7 +157,29 @@ public class CartController {
         var path = String.format("%s/%s.pdf", PDFOrderConfirmationService.PATH, cart.getId());
 
         mailSender.sendOrderConfirmation(inDatabase.getEmail(), cart.getId(), path);
+
         orderRepository.orderCart(cart.getId());
         return ResponseEntity.ok(new MessageResponse("okay"));
     }
+
+    /**
+     * Method sets address for order. Call this before ordering the cart!
+     *
+     * @return
+     */
+    @PostMapping("/setAddress")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<MessageResponse> setAddressForOrder(@RequestBody SetAddressRequest request) {
+        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
+
+        var cart = orderRepository.findCartByUser(inDatabase).orElseThrow(() -> new IllegalArgumentException("no cart"));
+        if (cart.getOrderContents().isEmpty()) {
+            throw new IllegalArgumentException("cart is empty");
+        }
+
+        orderRepository.setAddressForOrder(cart.getId(), request.getZip(), request.getCity(), request.getStreet(), request.getStreetnumber());
+        return ResponseEntity.ok(new MessageResponse("okay"));
+    }
+
 }

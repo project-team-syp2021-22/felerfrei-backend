@@ -70,8 +70,6 @@ public class MailSender {
         MimeMessage mailMessage = javaMailSender.createMimeMessage();
         mailMessage.setSubject("Order Confirmation #" + orderId, CHARSET);
 
-
-
         var helper = new MimeMessageHelper(mailMessage, true, CHARSET);
         helper.setTo(email);
         helper.setText(text, true);

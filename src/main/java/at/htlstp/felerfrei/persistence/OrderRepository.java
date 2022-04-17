@@ -48,11 +48,16 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Transactional
     boolean removeProductFromCart(Integer order_content_id, Integer delAmount);
 
-    @Query(value="select set_order_content_amount(?1, ?2);", nativeQuery = true)
+    @Query(value = "select set_order_content_amount(?1, ?2);", nativeQuery = true)
     boolean setOrderContentAmount(int orderContentId, int amount);
 
-    @Query(value="call order_cart(?1);", nativeQuery = true)
+    @Query(value = "call order_cart(?1);", nativeQuery = true)
     @Modifying
     @Transactional
     void orderCart(int cartId);
+
+    @Query(value = "call set_address_for_order(?1, ?2, ?3, ?4,?5)", nativeQuery = true)
+    @Modifying
+    @Transactional
+    void setAddressForOrder(Integer id, String zip, String city, String street, String streetnumber);
 }
