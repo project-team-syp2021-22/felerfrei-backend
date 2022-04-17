@@ -48,7 +48,7 @@ create table Product
     id          serial primary key,
     name        varchar(254) not null,
     description varchar(1024),
-    isPublished bool,
+    isPublished bool not null default false,
     price       float check ( price > 0 ),
     material    varchar(256)
 );
