@@ -84,28 +84,13 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
+        try {
+            validateCredentials(signUpRequest.getEmail(), true, signUpRequest.getPassword(), signUpRequest.getFirstname(), signUpRequest.getLastname(), signUpRequest.getTelephone());
+        } catch (IllegalArgumentException e) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Email wird bereits verwendet"));
+                    .body(new MessageResponse(e.getMessage()));
         }
-        if (passwordIsNotValid(signUpRequest.getPassword())) {
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(new MessageResponse("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen."));
-        }
-
-        if(!signUpRequest.getFirstname().matches("\\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+")){
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Vorname ist ungültig"));
-        }
-        if(!signUpRequest.getLastname().matches("\\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+")){
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("Nachname ist ungültig"));
-        }
-
 
         User user;
         try {
@@ -124,6 +109,34 @@ public class AuthController {
 
         mailSender.sendVerificationEmail(savedToken, "http://localhost:3000/verify/");
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+    }
+
+    private void validateCredentials(String email, boolean newEmail, String password, String firstname, String lastname, String telephone) {
+        if (email.isEmpty() || password.isEmpty() || firstname.isEmpty() || lastname.isEmpty() || telephone.isEmpty()) {
+            throw new IllegalArgumentException("Fields must not be empty");
+        }
+
+        validateEmail(email, newEmail);
+        if (passwordIsNotValid(password)) {
+            throw new IllegalArgumentException("Passwort entspricht nicht den empfohlenen Vorgaben. Bitte verwenden Sie mindestens 8 Zeichen, einen Großbuchstaben, einen Kleinbuchstaben, eine Zahl und ein Sonderzeichen.");
+        }
+
+        if (!firstname.matches("\\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+")) {
+            throw new IllegalArgumentException("Vorname ist ungültig");
+        }
+        if (!lastname.matches("\\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+")) {
+            throw new IllegalArgumentException("Nachname ist ungültig");
+        }
+    }
+
+    private void validateEmail(String email, boolean newEmail) {
+        String emailRegex = "^[\\w!#$%&'*+/=?`{|}~^-]+(?:\\.[\\w!#$%&'*+/=?`{|}~^-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}$";
+        if (!email.matches(emailRegex)) {
+            throw new IllegalArgumentException("Email ist ungültig");
+        }
+        if (newEmail && userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("Email wird bereits verwendet");
+        }
     }
 
     @PostMapping("/verify")
@@ -152,9 +165,11 @@ public class AuthController {
             throw new BadCredentialsException("Password cannot be null");
         if (!encoder.matches(request.getPassword(), user.getPassword()))
             throw new BadCredentialsException("Wrong password");
-
-        if (!user.getEmail().equals(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
-            throw new BadCredentialsException("Email already in use");
+        boolean newEmail = !user.getEmail().equals(request.getEmail());
+        try {
+            validateCredentials(request.getEmail(), newEmail, request.getPassword(), request.getFirstname(), request.getLastname(), request.getTelephone());
+        } catch (IllegalArgumentException e) {
+            throw new BadCredentialsException(e.getMessage());
         }
         user.setEmail(request.getEmail());
         user.setFirstname(request.getFirstname());
