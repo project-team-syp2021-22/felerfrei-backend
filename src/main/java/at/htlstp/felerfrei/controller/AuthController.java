@@ -112,7 +112,7 @@ public class AuthController {
     }
 
     private void validateCredentials(String email, boolean newEmail, String password, String firstname, String lastname, String telephone) {
-        if (email.isEmpty() || password.isEmpty() || firstname.isEmpty() || lastname.isEmpty() || telephone.isEmpty()) {
+        if (email.isEmpty() || password.isEmpty() || firstname.isEmpty() || lastname.isEmpty()) {
             throw new IllegalArgumentException("Fields must not be empty");
         }
 
