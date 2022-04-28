@@ -122,6 +122,8 @@ public class PDFOrderConfirmationService implements OrderConfirmationService{
             createHeadings(cb, 432, 633, "Preis pro Stück");
             createHeadings(cb, 502, 633, "Preis Gesamt");
 
+            printHeading(cb);
+
             //add the images
 //            Image companyLogo = Image.getInstance("images/olympics_logo.gif");
 //            companyLogo.setAbsolutePosition(25, 700);
@@ -178,6 +180,14 @@ public class PDFOrderConfirmationService implements OrderConfirmationService{
         cb.setFontAndSize(bfBold, 8);
         cb.setTextMatrix(x, y);
         cb.showText(text.trim());
+        cb.endText();
+    }
+
+    private void printHeading(PdfContentByte cb) {
+        cb.beginText();
+        cb.setFontAndSize(bfBold, 20);
+        cb.setTextMatrix(150, 720);
+        cb.showText("Bestellbestätigung");
         cb.endText();
     }
 
