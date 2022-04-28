@@ -1,8 +1,11 @@
 package at.htlstp.felerfrei.persistence;
 
+import at.htlstp.felerfrei.domain.Product;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import at.htlstp.felerfrei.domain.user.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -60,4 +63,5 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Modifying
     @Transactional
     void setAddressForOrder(Integer id, String zip, String city, String street, String streetnumber);
+    Page<Order> findAllByOrdered(boolean isOrdered, Pageable pageable);
 }

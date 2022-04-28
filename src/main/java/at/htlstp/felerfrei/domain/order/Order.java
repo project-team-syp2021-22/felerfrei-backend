@@ -22,6 +22,7 @@ public class Order {
     private Integer id;
 
     @Column(name = "orderdate", nullable = false)
+    @Setter
     private LocalDate orderdate;
 
     @Column(name = "isordered", nullable = false)
@@ -38,6 +39,9 @@ public class Order {
 
     @Column(name="city")
     private String city;
+
+    @Column(name = "payed", nullable = false, columnDefinition = "boolean default false")
+    private boolean payed = false;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

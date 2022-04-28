@@ -1,5 +1,6 @@
 package at.htlstp.felerfrei.controller;
 
+import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
 import at.htlstp.felerfrei.payload.request.AddTooCartRequest;
@@ -59,7 +60,7 @@ public class CartController {
 
         var cart = orderRepository.findCartByUser(inDatabase);
         if (cart.isEmpty()) {
-            var order = new Order(null, LocalDate.now(), false, null, null, null, null, inDatabase, null);
+            var order = new Order(null, LocalDate.now(), false, null, null, null, null, false, inDatabase, null);
             order.setOrderContent(List.of(new OrderContent(null, 1, request.getExtra(), product.getPrice(), order, product)));
             orderRepository.save(order);
         } else {
@@ -151,6 +152,8 @@ public class CartController {
         if (cart.getOrderContents().isEmpty()) {
             throw new IllegalArgumentException("cart is empty");
         }
+        cart.setOrderdate(LocalDate.now());
+        orderRepository.save(cart);
 
         pdfConfirmationService.write(cart);
 
