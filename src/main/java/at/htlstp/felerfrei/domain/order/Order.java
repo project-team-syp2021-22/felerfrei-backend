@@ -41,6 +41,7 @@ public class Order {
     private String city;
 
     @Column(name = "payed", nullable = false, columnDefinition = "boolean default false")
+    @Setter
     private boolean payed = false;
 
     @ManyToOne

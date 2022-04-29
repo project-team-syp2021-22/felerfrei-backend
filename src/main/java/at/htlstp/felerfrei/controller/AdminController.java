@@ -1,28 +1,20 @@
 package at.htlstp.felerfrei.controller;
 
 import at.htlstp.felerfrei.domain.Product;
-import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.payload.request.ModifyProductRequest;
+import at.htlstp.felerfrei.payload.request.PayedRequest;
 import at.htlstp.felerfrei.payload.response.AdminOrdersResponse;
 import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.ProductRepository;
-import at.htlstp.felerfrei.persistence.UserRepository;
-import at.htlstp.felerfrei.security.jwt.JwtUtils;
 import at.htlstp.felerfrei.services.FileService;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,17 +28,12 @@ public class AdminController {
     private final FileService imageLocationService;
     private final OrderRepository orderRepository;
 
-    private final JwtUtils jwtUtils;
-
-    private final UserRepository userRepository;
     private static final String PRODUCT_NOT_FOUND = "Product not found";
 
-    public AdminController(ProductRepository productRepository, FileService imageLocationService, OrderRepository orderRepository, JwtUtils jwtUtils, UserRepository userRepository) {
+    public AdminController(ProductRepository productRepository, FileService imageLocationService, OrderRepository orderRepository) {
         this.productRepository = productRepository;
         this.imageLocationService = imageLocationService;
         this.orderRepository = orderRepository;
-        this.jwtUtils = jwtUtils;
-        this.userRepository = userRepository;
     }
 
     @GetMapping("/products")
@@ -130,5 +117,14 @@ public class AdminController {
         Page<AdminOrdersResponse> page = new PageImpl<>(mapped, pageable, orders.getTotalElements());
 
         return ResponseEntity.ok(page);
+    }
+
+    @PostMapping("/payOrder/{orderId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Integer> payOrder(@PathVariable Integer orderId, @RequestBody PayedRequest payedRequest) {
+        var order = orderRepository.findById(orderId).orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        order.setPayed(payedRequest.getPayed());
+        orderRepository.save(order);
+        return ResponseEntity.ok(orderId);
     }
 }

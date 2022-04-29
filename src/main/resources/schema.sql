@@ -141,6 +141,10 @@ begin
     set retail_price = newPrice
     where Product_id = productId
       and (select isOrdered from "order" where id = Order_id) = false;
+
+    if newIsPublished = false then
+        delete from order_product o where o.product_id = productId and (select isOrdered from "order" where id = o.Order_id) = false;
+    end if;
 end;
 $$
     language plpgsql;
