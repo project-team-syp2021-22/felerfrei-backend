@@ -17,7 +17,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Order {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_seq")
     @Column(name = "id", nullable = false)
     private Integer id;
 

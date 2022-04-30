@@ -17,7 +17,7 @@ import java.util.Objects;
 public class OrderContent {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_product_seq")
     @Column(name="order_product_id")
     private Integer id;
 

@@ -19,7 +19,7 @@ import java.util.Objects;
 @Setter
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "user_seq")
     @Column(name = "id", nullable = false)
     private Integer id;
 

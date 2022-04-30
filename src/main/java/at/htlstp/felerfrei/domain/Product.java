@@ -15,11 +15,11 @@ import java.util.Objects;
 @Setter
 public class Product implements Showable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "product_seq")
     @Column(name = "id", nullable = false)
     private Integer id;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "description", length = 1024)
@@ -31,7 +31,7 @@ public class Product implements Showable {
     @Column(name = "price")
     private Double price;
 
-    @Column(name="material", length = 255)
+    @Column(name="material")
     private String material;
 
     @ManyToMany(cascade = CascadeType.ALL)

@@ -18,7 +18,7 @@ import java.util.Objects;
 @NoArgsConstructor
 public class Project implements Showable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "project_seq")
     @Column(name = "id", nullable = false)
     private Integer id;
 
