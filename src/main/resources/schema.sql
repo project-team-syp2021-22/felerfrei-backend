@@ -153,7 +153,7 @@ create or replace procedure order_cart(in cartId int)
 as
 $$
 begin
-    update "order" set isOrdered = true where id = cartId;
+    update "order" set isOrdered = true, orderdate = current_date where id = cartId;
 end;
 $$
     language plpgsql;

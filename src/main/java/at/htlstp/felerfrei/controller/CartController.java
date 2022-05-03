@@ -1,12 +1,8 @@
 package at.htlstp.felerfrei.controller;
 
-import at.htlstp.felerfrei.domain.RoleAuthority;
 import at.htlstp.felerfrei.domain.order.Order;
 import at.htlstp.felerfrei.domain.order.OrderContent;
-import at.htlstp.felerfrei.payload.request.AddTooCartRequest;
-import at.htlstp.felerfrei.payload.request.RemoveFromCartRequest;
-import at.htlstp.felerfrei.payload.request.SetAddressRequest;
-import at.htlstp.felerfrei.payload.request.SetProductInCartRequest;
+import at.htlstp.felerfrei.payload.request.*;
 import at.htlstp.felerfrei.payload.response.CartResponse;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
 import at.htlstp.felerfrei.persistence.OrderRepository;
@@ -21,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -145,15 +142,20 @@ public class CartController {
 
     @PostMapping("/order")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<MessageResponse> orderCart() {
+    public ResponseEntity<MessageResponse> orderCart(@RequestBody OrderRequest request) {
         var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
         var cart = orderRepository.findCartByUser(inDatabase).orElseThrow(() -> new IllegalArgumentException("no cart"));
         if (cart.getOrderContents().isEmpty()) {
             throw new IllegalArgumentException("cart is empty");
         }
-        cart.setOrderdate(LocalDate.now());
-        orderRepository.save(cart);
+        System.out.println("delivery" + request.isDelivery());
+        if(request.isDelivery()) {
+            if (request.getHouseNumber().isEmpty() || request.getStreet().isEmpty() || request.getCity().isEmpty() || request.getZip().isEmpty()) {
+                throw new IllegalArgumentException("Request contains empty fields");
+            }
+            orderRepository.setAddressForOrder(cart.getId(), request.getZip(), request.getCity(), request.getStreet(), request.getHouseNumber());
+        }
 
         pdfConfirmationService.write(cart);
 
@@ -164,25 +166,4 @@ public class CartController {
         orderRepository.orderCart(cart.getId());
         return ResponseEntity.ok(new MessageResponse("okay"));
     }
-
-    /**
-     * Method sets address for order. Call this before ordering the cart!
-     *
-     * @return
-     */
-    @PostMapping("/setAddress")
-    @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<MessageResponse> setAddressForOrder(@RequestBody SetAddressRequest request) {
-        var user = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var inDatabase = userRepository.findById(user.getId()).orElseThrow(() -> new IllegalArgumentException("no user"));
-
-        var cart = orderRepository.findCartByUser(inDatabase).orElseThrow(() -> new IllegalArgumentException("no cart"));
-        if (cart.getOrderContents().isEmpty()) {
-            throw new IllegalArgumentException("cart is empty");
-        }
-
-        orderRepository.setAddressForOrder(cart.getId(), request.getZip(), request.getCity(), request.getStreet(), request.getStreetnumber());
-        return ResponseEntity.ok(new MessageResponse("okay"));
-    }
-
 }
