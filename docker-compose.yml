@@ -1,0 +1,28 @@
+version: '3.1'
+services:
+  Postgres:
+    ports:
+      - '5432:5432'
+    image: 'postgres:latest'
+    container_name: Postgres
+    environment:
+      - POSTGRES_USER=felerfrei_sa
+      - POSTGRES_PASSWORD=test
+      - POSTGRES_DB=felerfrei
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d
+
+  app:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: app
+    ports:
+      - '8080:8080'
+    depends_on:
+      - Postgres
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://Postgres:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=felerfrei_sa
+      - SPRING_DATASOURCE_PASSWORD=test
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
