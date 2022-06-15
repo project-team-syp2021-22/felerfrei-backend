@@ -17,11 +17,13 @@ public class JavaMailProvider {
     @Bean
     public JavaMailSender getJavaMailSender() throws URISyntaxException {
         var mailSender = new JavaMailSenderImpl();
-        var properties = getConfiguration(Paths.get(getClass().getResource("/email.config").toURI()).toString());
-        mailSender.setHost(properties.get("host").toString());
-        var port = Integer.parseInt(String.valueOf(properties.get("port")));
-        mailSender.setPort(port);
-        mailSender.setUsername(properties.get("username").toString());
+//        var properties = getConfiguration(Paths.get(getClass().getResource("/email.config").toURI()).toString());
+//        mailSender.setHost(properties.get("host").toString());
+        mailSender.setHost("192.168.192.1");
+//        var port = Integer.parseInt(String.valueOf(properties.get("port")));
+        mailSender.setPort(1025);
+//        mailSender.setUsername(properties.get("username").toString());
+        mailSender.setUsername("office@felerfrei.at");
 //        mailSender.setPassword(properties.get("password").toString());
         var javaMailProperties = mailSender.getJavaMailProperties();
 //        javaMailProperties.setProperty("mail.transport.protocol", "smtp");

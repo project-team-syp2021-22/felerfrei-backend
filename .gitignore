@@ -3,7 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-
+!target/felerfrei-1.0.jar
 ### STS ###
 .apt_generated
 .classpath
