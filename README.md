@@ -4,7 +4,7 @@
 
 ### Setup
 
-Add a `email.config` file to the resources folder.
+Add a `config` folder in the sources root and provide a `email.config` file.
 
 Example:
 

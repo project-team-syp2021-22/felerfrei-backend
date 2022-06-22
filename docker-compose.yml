@@ -22,7 +22,7 @@ services:
     depends_on:
       - Postgres
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://Postgres:5432/postgres
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://Postgres:5432/felerfrei
       - SPRING_DATASOURCE_USERNAME=felerfrei_sa
       - SPRING_DATASOURCE_PASSWORD=test
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update

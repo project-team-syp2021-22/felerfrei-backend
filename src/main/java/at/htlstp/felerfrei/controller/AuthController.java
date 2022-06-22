@@ -6,16 +6,12 @@ import at.htlstp.felerfrei.domain.user.VerificationToken;
 import at.htlstp.felerfrei.payload.request.*;
 import at.htlstp.felerfrei.payload.response.JwtResponse;
 import at.htlstp.felerfrei.payload.response.MessageResponse;
-import at.htlstp.felerfrei.persistence.OrderRepository;
 import at.htlstp.felerfrei.persistence.RoleRepository;
 import at.htlstp.felerfrei.persistence.UserRepository;
 import at.htlstp.felerfrei.persistence.VerificationTokenRepository;
 import at.htlstp.felerfrei.security.jwt.JwtUtils;
 import at.htlstp.felerfrei.security.services.UserDetailsImpl;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,10 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -115,7 +107,7 @@ public class AuthController {
         var token = UUID.randomUUID().toString();
         var savedToken = verificationTokenRepository.save(new VerificationToken(token, saved));
 
-        mailSender.sendVerificationEmail(savedToken, "http://localhost:3000/verify/");
+        mailSender.sendVerificationEmail(savedToken, "http://localhost:8081/verify/");
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 
